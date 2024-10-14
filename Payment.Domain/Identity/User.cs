@@ -1,0 +1,23 @@
+﻿using Payment.Domain.ECommerce;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Payment.Domain.Identity
+{
+    public class User 
+    {
+        public Guid? Id { get; set; } // Guid 
+        public required string FirstName { get; set; }
+        public string? LastName { get; set; }
+        public required string Email { get; set; }
+        public required string Сountry { get; set; }
+        public required string Address { get; set; }
+        public required string PhoneNamber { get; set; }
+
+
+        public virtual required Basket Basket { get; set; }
+    }
+}
