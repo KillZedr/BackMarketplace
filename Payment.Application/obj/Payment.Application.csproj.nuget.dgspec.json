@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj": {}
+    "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj": {
+    "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj",
+        "projectUniqueName": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj",
         "projectName": "Payment.Application",
-        "projectPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj",
+        "projectPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj",
         "packagesPath": "C:\\Users\\Илья\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Application\\obj\\",
+        "outputPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -33,8 +33,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj": {
-                "projectPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj"
+              "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj": {
+                "projectPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj"
               }
             }
           }
@@ -74,14 +74,14 @@
         }
       }
     },
-    "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj": {
+    "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj",
         "projectName": "Payment.Domain",
-        "projectPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj",
+        "projectPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Domain\\Payment.Domain.csproj",
         "packagesPath": "C:\\Users\\Илья\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Domain\\obj\\",
+        "outputPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

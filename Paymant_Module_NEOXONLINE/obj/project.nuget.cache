@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ma6jUkN4Brt4KxlJUs0Th/PGtXkxvrK3SArn8Zli177I8daqEKkEAMT+VaI7CkyyatKdxerTyJrIwDfr/hTr8w==",
+  "dgSpecHash": "XgTO4M3fH8uBrh6cQNXmPDru44D24JhndUQFq6qBx0ymLARmBUnm2coMrcPE6dyUdwaVoocPqIe5k7ge2TmJ2A==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE.csproj",
+  "projectFilePath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Илья\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\Илья\\.nuget\\packages\\microsoft.openapi\\1.2.3\\microsoft.openapi.1.2.3.nupkg.sha512",

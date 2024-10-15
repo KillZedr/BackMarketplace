@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mMqv8sP8OFl7FUY93PsaflKm8AuTu5MhewzeAlGnKmUJahmgbyHTZohgVMoARdy52x1j/E8U+W4Ve/krcM7YXQ==",
+  "dgSpecHash": "ffbdpSrO4KBGI+h188VFL+H/EdcIiyQcIEl7L5GbLsPteYdwqCsHd1z0KGMp5SL5GEB01h3zNehbqp022ZnyAQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Илья\\Desktop\\gitNeox\\NEOXONINE_PaymentMickroservise\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj",
+  "projectFilePath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Payment.Application\\Payment.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Илья\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.10\\microsoft.entityframeworkcore.8.0.10.nupkg.sha512",
     "C:\\Users\\Илья\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.10\\microsoft.entityframeworkcore.abstractions.8.0.10.nupkg.sha512",
