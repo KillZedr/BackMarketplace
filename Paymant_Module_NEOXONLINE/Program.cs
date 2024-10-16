@@ -1,4 +1,6 @@
 
+using Serilog;
+
 namespace Paymant_Module_NEOXONLINE
 {
     public class Program
@@ -14,6 +16,9 @@ namespace Paymant_Module_NEOXONLINE
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+
+            Startup.AddSerilog(builder);
+            Startup.RegisterDAL(builder.Services);
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

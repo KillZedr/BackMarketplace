@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Paymant_Module_NEOXONLINE")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b753820adc7e18c5c9a5f30cbb72c85099a69ee8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86edaada3f704c9a5427acf742a80e1b79f5affa")]
 [assembly: System.Reflection.AssemblyProductAttribute("Paymant_Module_NEOXONLINE")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Paymant_Module_NEOXONLINE")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
