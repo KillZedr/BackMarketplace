@@ -14,9 +14,7 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.Identity
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            throw new NotImplementedException();
-            /*builder.ToTable(nameof(User));
-            builder.HasOne<Basket>().WithOne(b => b.User);*/
+            builder.HasOne<Basket>().WithOne(b => b.User);
         }
     }
 }

@@ -10,6 +10,6 @@ namespace Payment.Domain.PayProduct
     {
         
         public string Name { get; set; }
-
+        public virtual IEnumerable<Product>? Products { get; set; } = new List<Product>();
     }
 }

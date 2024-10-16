@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Payment.Domain.ECommerce;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,6 @@ namespace Payment.Domain.PayProduct
         public string Description { get; set; }
         public virtual Category? Category { get; set; }
         public decimal? Price { get; set; }
-
+        public virtual required IEnumerable<ProductInBasket> ProductInBasket { get; set; }
     }
 }

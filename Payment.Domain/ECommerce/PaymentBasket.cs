@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Payment.Domain.ECommerce
 {
-    public class Pay : Entity<int>
+    public class PaymentBasket : Entity<int>
     {
-        public virtual required IEnumerable<ProductInBasket> ProductInBasket { get; set; } = new List<ProductInBasket>();
+        public virtual required Basket Basket { get; set; }
         public required DateTime Date { get; set; }
         public required decimal Amount { get; set; }
         public required string Source { get; set; }
