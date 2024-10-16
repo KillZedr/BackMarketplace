@@ -21,7 +21,7 @@ namespace Paymant_Module_NEOXONLINE
             builder.InitialCatalog = 'Payment_Modul';*/
             var connectionString = builder.ConnectionString;
 
-            services.AddNpgsql<DbContext>("host=localhost; port=5432; database=Payment_Module; Username=...; Passsword=123321");
+            services.AddNpgsql<DbContext>("host=localhost;port=5432;database=Paymant_Module_Db;Username=postgres;Password=KIDPay321");
 
             if (!TestConnection(services))
             {

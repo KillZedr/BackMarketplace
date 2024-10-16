@@ -14,4 +14,9 @@
     <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Payment_DAL\EntityTypeConfigurations\ECommerce\" />
+    <Folder Include="Payment_DAL\EntityTypeConfigurations\PayProduct\" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,64 @@
+2024-10-16 13:33:43.805 +03:00 [INF] Testing the DB connection....
+2024-10-16 13:33:44.558 +03:00 [INF] EnsureCreated failed
+2024-10-16 13:33:44.629 +03:00 [INF] System.ArgumentException: Couldn't set passsword (Parameter 'passsword')
+ ---> System.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.
+   at Npgsql.NpgsqlConnectionStringBuilder.GeneratedActions(GeneratedAction action, String keyword, Object& value)
+   at Npgsql.NpgsqlConnectionStringBuilder.set_Item(String keyword, Object value)
+   --- End of inner exception stack trace ---
+   at Npgsql.NpgsqlConnectionStringBuilder.set_Item(String keyword, Object value)
+   at System.Data.Common.DbConnectionStringBuilder.set_ConnectionString(String value)
+   at Npgsql.NpgsqlConnectionStringBuilder..ctor(String connectionString)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlDatabaseCreator.Exists(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlDatabaseCreator.Exists()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreated()
+   at Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.EnsureCreated()
+   at Paymant_Module_NEOXONLINE.Startup.TestConnection(IServiceCollection services) in C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Paymant_Module_NEOXONLINE\Startup.cs:line 65
+2024-10-16 13:35:54.356 +03:00 [INF] Testing the DB connection....
+2024-10-16 13:35:54.847 +03:00 [INF] EnsureCreated failed
+2024-10-16 13:35:54.897 +03:00 [INF] System.ArgumentException: Couldn't set passsword (Parameter 'passsword')
+ ---> System.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.
+   at Npgsql.NpgsqlConnectionStringBuilder.GeneratedActions(GeneratedAction action, String keyword, Object& value)
+   at Npgsql.NpgsqlConnectionStringBuilder.set_Item(String keyword, Object value)
+   --- End of inner exception stack trace ---
+   at Npgsql.NpgsqlConnectionStringBuilder.set_Item(String keyword, Object value)
+   at System.Data.Common.DbConnectionStringBuilder.set_ConnectionString(String value)
+   at Npgsql.NpgsqlConnectionStringBuilder..ctor(String connectionString)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlDatabaseCreator.Exists(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlDatabaseCreator.Exists()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreated()
+   at Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.EnsureCreated()
+   at Paymant_Module_NEOXONLINE.Startup.TestConnection(IServiceCollection services) in C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Paymant_Module_NEOXONLINE\Startup.cs:line 65
+2024-10-16 13:49:03.414 +03:00 [INF] Testing the DB connection....
+2024-10-16 13:49:04.073 +03:00 [INF] EnsureCreated failed
+2024-10-16 13:49:04.153 +03:00 [INF] System.ArgumentException: Couldn't set passsword (Parameter 'passsword')
+ ---> System.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.
+   at Npgsql.NpgsqlConnectionStringBuilder.GeneratedActions(GeneratedAction action, String keyword, Object& value)
+   at Npgsql.NpgsqlConnectionStringBuilder.set_Item(String keyword, Object value)
+   --- End of inner exception stack trace ---
+   at Npgsql.NpgsqlConnectionStringBuilder.set_Item(String keyword, Object value)
+   at System.Data.Common.DbConnectionStringBuilder.set_ConnectionString(String value)
+   at Npgsql.NpgsqlConnectionStringBuilder..ctor(String connectionString)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlDatabaseCreator.Exists(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlDatabaseCreator.Exists()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreated()
+   at Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.EnsureCreated()
+   at Paymant_Module_NEOXONLINE.Startup.TestConnection(IServiceCollection services) in C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Paymant_Module_NEOXONLINE\Startup.cs:line 65
+2024-10-16 13:53:05.890 +03:00 [INF] Testing the DB connection....
+2024-10-16 13:53:06.551 +03:00 [INF] EnsureCreated failed
+2024-10-16 13:53:06.654 +03:00 [INF] System.ArgumentException: Couldn't set passsword (Parameter 'passsword')
+ ---> System.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.
+   at Npgsql.NpgsqlConnectionStringBuilder.GeneratedActions(GeneratedAction action, String keyword, Object& value)
+   at Npgsql.NpgsqlConnectionStringBuilder.set_Item(String keyword, Object value)
+   --- End of inner exception stack trace ---
+   at Npgsql.NpgsqlConnectionStringBuilder.set_Item(String keyword, Object value)
+   at System.Data.Common.DbConnectionStringBuilder.set_ConnectionString(String value)
+   at Npgsql.NpgsqlConnectionStringBuilder..ctor(String connectionString)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlDatabaseCreator.Exists(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlDatabaseCreator.Exists()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreated()
+   at Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade.EnsureCreated()
+   at Paymant_Module_NEOXONLINE.Startup.TestConnection(IServiceCollection services) in C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Paymant_Module_NEOXONLINE\Startup.cs:line 65
+2024-10-16 13:56:30.475 +03:00 [INF] Testing the DB connection....
+2024-10-16 13:56:31.421 +03:00 [INF] Successfully created the DB
+2024-10-16 14:04:40.805 +03:00 [INF] Testing the DB connection....
+2024-10-16 14:04:42.039 +03:00 [INF] Successfully created the DB
