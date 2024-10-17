@@ -18,6 +18,6 @@ namespace Payment.Domain.Identity
         public required string PhoneNamber { get; set; }
 
 
-        public virtual required Basket Basket { get; set; }
+        public virtual IEnumerable<Basket> Basket { get; set; } = new List<Basket>();
     }
 }

@@ -14,3 +14,5 @@ C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment.Ap
 C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment.Application\obj\Debug\net8.0\refint\Payment.Application.dll
 C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment.Application\obj\Debug\net8.0\Payment.Application.pdb
 C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment.Application\obj\Debug\net8.0\ref\Payment.Application.dll
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment.Application\bin\Debug\net8.0\Payment.Application.runtimeconfig.json
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment.Application\obj\Debug\net8.0\Payment.Application.genruntimeconfig.cache

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Paymant_Module_NEOXONLINE.Contract.Exeptions;
+using Payment.Application;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.Application.Payment_DAL.RealisationInterfaces;
 using Serilog;
@@ -10,23 +11,27 @@ using ILogger = Serilog.ILogger;
 namespace Paymant_Module_NEOXONLINE
 {
     public class Startup
-    { 
+    {
+
+        internal static void AddServices(WebApplicationBuilder builder)
+        {
+            AddSerilog(builder);
+            RegisterDAL(builder.Services);
+        }
+
+
         public static void RegisterDAL(IServiceCollection services)
         {
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-          /*  builder.Password = '';
-            builder.UserID = '';
-            builder.DataSource = 'localhost, 5432';
 
-            builder.InitialCatalog = 'Payment_Modul';*/
-            var connectionString = builder.ConnectionString;
-
-            services.AddNpgsql<DbContext>("host=localhost;port=5432;database=Paymant_Module_Db;Username=postgres;Password=KIDPay321");
-
-            if (!TestConnection(services))
+            services.AddTransient<DbContextOptions<Payment_DbContext>>(provider =>
             {
-                throw new DbConnectionExeption("Test Db connection failed");
-            }
+                var builder = new DbContextOptionsBuilder<Payment_DbContext>();
+                builder.UseNpgsql("host=localhost;port=5432;database=Paymant_Module_Db;Username=postgres;Password=KIDPay321");
+                return builder.Options;
+            });
+
+            services.AddScoped<DbContext, Payment_DbContext>();
+            
             services.AddScoped<IUnitOfWork>(prov =>
             {
                 var context = prov.GetRequiredService<DbContext>();
@@ -55,14 +60,14 @@ namespace Paymant_Module_NEOXONLINE
 
         private static bool TestConnection(IServiceCollection services)
         {
-            var provider =  services.BuildServiceProvider();
+            var provider = services.BuildServiceProvider();
 
             var logger = provider.GetRequiredService<ILogger>();
             var context = provider.GetRequiredService<DbContext>();
             logger.Information("Testing the DB connection....");
             try
             {
-                 var createdAnew = context.Database.EnsureCreated();
+                var createdAnew = context.Database.EnsureCreated();
                 if (createdAnew)
                 {
                     logger.Information("Successfully created the DB");

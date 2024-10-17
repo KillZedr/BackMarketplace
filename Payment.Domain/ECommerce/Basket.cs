@@ -9,8 +9,9 @@ namespace Payment.Domain.ECommerce
 {
     public class Basket : Entity<int>
     {
-        public virtual PaymentBasket? Payment { get; set; }
-        public virtual required User User { get; set; }
-        public virtual required IEnumerable<ProductInBasket> ProductInBasket { get; set; } = new List<ProductInBasket>();
+        
+        public virtual PaymentBasket? PaymentBasket { get; set; }
+        public virtual  User User { get; set; } = null!;
+        public virtual  IEnumerable<ProductInBasket> ProductInBasket { get; set; } = new List<ProductInBasket>();
     }
 }

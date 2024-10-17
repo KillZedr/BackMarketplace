@@ -16,10 +16,11 @@ namespace Paymant_Module_NEOXONLINE
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-
-            Startup.AddSerilog(builder);
-            Startup.RegisterDAL(builder.Services);
+            Startup.AddServices(builder);
+           
             var app = builder.Build();
+
+            DbInitializer.InitializeDb(app.Services);
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

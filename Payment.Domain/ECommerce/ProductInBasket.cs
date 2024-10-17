@@ -9,7 +9,7 @@ namespace Payment.Domain.ECommerce
 {
     public class ProductInBasket : Entity<int>
     {
-        public virtual required Product Product { get; set; }
-        public virtual required Basket Basket { get; set; }
+        public  required Product Product { get; set; } = null!;
+        public  required Basket Basket { get; set; } = null!;
     }
 }
