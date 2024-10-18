@@ -20,7 +20,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
 
 
         // GET: api/<CategoryController>
-        [HttpGet]
+        [HttpGet("GetAllCategory")]
         public async Task<IActionResult> GetAllCategory()
         {
             var category = await _unitOfWork.GetRepository<Category>().AsReadOnlyQueryable().ToListAsync();
@@ -28,7 +28,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         }
         [HttpGet("FindCategoryByName")]
 
-        public async Task<IActionResult> GetCategoryById(string findCategoryName)
+        public async Task<IActionResult> GetCategoryByName(string findCategoryName)
         {
             var findCategory = await _unitOfWork.GetRepository<Category>()
                 .AsReadOnlyQueryable()
@@ -39,12 +39,12 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
             else
             {
-                return BadRequest(new { message = "Invalid course data" });
+                return BadRequest(new { message = $"Invalid course data. Not Faund {findCategoryName} " });
             }
         }
 
         // POST api/<CategoryController>
-        [HttpPost]
+        [HttpPost("CreateCategory")]
         public async Task<IActionResult> CreateCategory(string nameCategory)
         {
             var category = await _unitOfWork.GetRepository<Category>()
@@ -60,7 +60,50 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
             else
             {
-                return BadRequest(new { message = "Invalid course data" });
+                return BadRequest(new { message = $"Invalid course data. Category {nameCategory}  exists " });
+            }
+        }
+
+        [HttpPut("UpdateCategory")]
+
+        public async Task<IActionResult> UpdateCategory(string nameUpdateCategory, string newNameCategory)
+        {
+            var updateCategory = await _unitOfWork.GetRepository<Category>()
+                .AsReadOnlyQueryable()
+                .FirstOrDefaultAsync(c => c.Name == nameUpdateCategory);
+
+            if (updateCategory == null)
+            {
+                return BadRequest(new { message = $"Invalid course data. Not Faund {nameUpdateCategory}" });
+            }
+            else
+            {
+                updateCategory.Name = newNameCategory;
+                var repoCategory = _unitOfWork.GetRepository<Category>();
+                repoCategory.Update(updateCategory);
+                await _unitOfWork.SaveShangesAsync();
+                return Ok(updateCategory);
+            }
+        }
+
+
+        [HttpDelete("DeleteCategory")]
+
+        public async Task<IActionResult> DeleteCategory(string categoryName)
+        {
+            var deleteCategory = await _unitOfWork.GetRepository<Category>()
+                .AsReadOnlyQueryable()
+                .FirstOrDefaultAsync (c => c.Name == categoryName);
+            if (deleteCategory == null)
+            {
+                return BadRequest(new { message = $"Invalid course data. Not Faund {categoryName}" });
+            }
+            else
+            {
+                var repoCategory = _unitOfWork.GetRepository<Category>();
+                repoCategory.Delete(deleteCategory);
+                await _unitOfWork.SaveShangesAsync();
+                return Ok(deleteCategory);
             }
         }
     }

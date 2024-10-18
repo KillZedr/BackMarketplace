@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Payment_Module_NEOXONLINE")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1c92ff467a3725a130e7e0320707294d9f2469a4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2113ef1b9db2475775e82c93955877cf35369f79")]
 [assembly: System.Reflection.AssemblyProductAttribute("Payment_Module_NEOXONLINE")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Payment_Module_NEOXONLINE")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
