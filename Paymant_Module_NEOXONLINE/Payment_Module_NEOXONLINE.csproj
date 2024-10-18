@@ -25,4 +25,9 @@
     <ProjectReference Include="..\Payment.Application\Payment.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Identity\" />
+    <Folder Include="Controllers\ECommerce\" />
+  </ItemGroup>
+
 </Project>
