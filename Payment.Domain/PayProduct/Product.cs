@@ -14,5 +14,6 @@ namespace Payment.Domain.PayProduct
         public virtual Category? Category { get; set; }
         public decimal? Price { get; set; }
         public virtual required IEnumerable<ProductInBasket> ProductInBasket { get; set; }
+        public virtual required IEnumerable<Subscription> Subscription { get; set; }
     }
 }
