@@ -1,8 +1,8 @@
 {
   "Version": 1,
-  "Hash": "hZQyHHHTfdnCzdX1pma8Z/vE6s728mUNe2Tw1agKn5M=",
-  "Source": "Paymant_Module_NEOXONLINE",
-  "BasePath": "_content/Paymant_Module_NEOXONLINE",
+  "Hash": "SKLr395wdUuSM+eOt9JZrY10bts4qLzBWfjYHUBV0CA=",
+  "Source": "Payment_Module_NEOXONLINE",
+  "BasePath": "_content/Payment_Module_NEOXONLINE",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],

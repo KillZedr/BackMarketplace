@@ -1,0 +1,12 @@
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\bin\Debug\net8.0\Payment_BLL.deps.json
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\bin\Debug\net8.0\Payment_BLL.dll
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\bin\Debug\net8.0\Payment_BLL.pdb
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\Payment_BLL.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\Payment_BLL.AssemblyInfoInputs.cache
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\Payment_BLL.AssemblyInfo.cs
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\Payment_BLL.csproj.CoreCompileInputs.cache
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\Payment_BLL.sourcelink.json
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\Payment_BLL.dll
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\refint\Payment_BLL.dll
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\Payment_BLL.pdb
+C:\Users\Илья\Desktop\gitNeox\gitFolder\Paymant_Module_NEOXONLINE\Payment_BLL\obj\Debug\net8.0\ref\Payment_BLL.dll

@@ -104,7 +104,7 @@ namespace Payment.Application.Migrations
 
             modelBuilder.Entity("Payment.Domain.Identity.User", b =>
                 {
-                    b.Property<Guid?>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -123,7 +123,7 @@ namespace Payment.Application.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
-                    b.Property<string>("PhoneNamber")
+                    b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("text");
 

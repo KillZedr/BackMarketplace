@@ -3656,9 +3656,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE.csproj",
-      "projectName": "Paymant_Module_NEOXONLINE",
-      "projectPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE.csproj",
+      "projectUniqueName": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\Payment_Module_NEOXONLINE.csproj",
+      "projectName": "Payment_Module_NEOXONLINE",
+      "projectPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\Payment_Module_NEOXONLINE.csproj",
       "packagesPath": "C:\\Users\\Илья\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\obj\\",
       "projectStyle": "PackageReference",

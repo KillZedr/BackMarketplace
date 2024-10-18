@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "oIaiHL8M0LrMpZuGn5+sC+kLa9cD6XBaVt4kncAyosuk3fl6TTC0fdcTlFeUMWt/Ne41sV/+G5ai8pJHQNPppg==",
+  "dgSpecHash": "SmC+7O2+pjajUXudMgELq6OtaS5oqd+QIM3GBztEczBBNuFfaiUWyhY4QaUXjIiv3uB85RiWcfZ81EltIwqt/A==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE.csproj",
+  "projectFilePath": "C:\\Users\\Илья\\Desktop\\gitNeox\\gitFolder\\Paymant_Module_NEOXONLINE\\Paymant_Module_NEOXONLINE\\Payment_Module_NEOXONLINE.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Илья\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Илья\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",

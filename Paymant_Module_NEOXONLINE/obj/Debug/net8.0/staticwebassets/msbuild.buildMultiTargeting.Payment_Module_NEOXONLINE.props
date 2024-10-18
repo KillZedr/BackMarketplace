@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Payment_Module_NEOXONLINE.props" />
+</Project>
