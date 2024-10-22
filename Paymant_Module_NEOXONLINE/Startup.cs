@@ -1,12 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Paymant_Module_NEOXONLINE.Contract.Exeptions;
+using Paymant_Module_NEOXONLINE.Services.Abstractions;
+using Paymant_Module_NEOXONLINE.Services;
 using Payment.Application;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.Application.Payment_DAL.RealisationInterfaces;
 using Serilog;
 using System.Data.SqlClient;
 using ILogger = Serilog.ILogger;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Paymant_Module_NEOXONLINE
 {
@@ -17,6 +22,29 @@ namespace Paymant_Module_NEOXONLINE
         {
             AddSerilog(builder);
             RegisterDAL(builder.Services);
+
+            var jwtIss = builder.Configuration.GetSection("Jwt:Iss").Get<string>();
+            var jwtAud = builder.Configuration.GetSection("Jwt:Aud").Get<string>();
+            var jwtKey = builder.Configuration.GetSection("Jwt:Secret").Get<string>();
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opt =>
+                {
+                    opt.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtIss,
+                        ValidAudience = jwtAud,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwtKey))
+                    };
+                });
+            builder.Services.AddAuthorization();
+
+            builder.Services.AddScoped<ITokenService, TokenService>();
         }
 
 

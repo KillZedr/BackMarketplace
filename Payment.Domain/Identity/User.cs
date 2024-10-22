@@ -15,7 +15,7 @@ namespace Payment.Domain.Identity
         public required string Email { get; set; }
         public required string Сountry { get; set; }
         public required string Address { get; set; }
-        public required string PhoneNamber { get; set; }
+        public required string PhoneNumber { get; set; }
 
 
         public virtual IEnumerable<Basket> Basket { get; set; } = new List<Basket>();
