@@ -74,14 +74,42 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                 return NotFound($"category with name {productCreationDto.categoryName} not found");
             }
         }
-        
 
-        //[HttpPut("UpdateProduct")]
 
-        //public async Task<IActionResult> UpdateProduct()
-        //{
-        //need DTOs
-        //}
+        [HttpPut("UpdateProduct")]
+
+        public async Task<IActionResult> UpdateProduct(ProductCreationDto productDto)
+        {
+            var product = await _unitOfWork.GetRepository<Product>()
+                .AsReadOnlyQueryable()
+                .FirstOrDefaultAsync(p => p.Name.Equals(productDto.Name));
+            if (product != null)
+            {
+                var category = await _unitOfWork.GetRepository<Category>()
+                    .AsQueryable()
+                    .FirstOrDefaultAsync(c => c.Name.Equals(productDto.categoryName));
+                if (category != null)
+                {
+                    product.Name = productDto.Name;
+                    product.Description = productDto.Description;
+                    product.Price = productDto.Price;
+                    //product.Category = category;
+
+                    _unitOfWork.GetRepository<Product>().Update(product);
+                    await _unitOfWork.SaveShangesAsync();
+
+                    return Ok(product);
+                }
+                else
+                {
+                    return NotFound($"category with name {productDto.categoryName} not found");
+                }
+            }
+            else
+            {
+                return NotFound($"product with name {productDto.Name} not found");
+            }
+        }
 
 
         [HttpDelete("DeleteProduct")]
