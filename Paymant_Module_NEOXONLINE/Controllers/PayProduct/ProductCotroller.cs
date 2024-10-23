@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
+using Payment.Domain.DTOs;
+using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
 
 namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
@@ -20,13 +22,19 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         [HttpGet("GetAllProducts")]
         public async Task<IActionResult> GetAllProducts()
         {
-            return Ok(await _unitOfWork.GetRepository<Product>().AsQueryable().ToListAsync());
+            return Ok(await _unitOfWork.GetRepository<Product>()
+                .AsQueryable()
+                .Include(p => p.Category)
+                .ToListAsync());
         }
 
         [HttpGet("GetProductByName")]
         public async Task<IActionResult> GetProductByName(string productName)
         {
-            var product = _unitOfWork.GetRepository<Product>().AsQueryable().Where(p => p.Name.Equals(productName)).First();
+            var product = _unitOfWork.GetRepository<Product>()
+                .AsQueryable()
+                .Include(p => p.Category)
+                .Where(p => p.Name.Equals(productName)).First();
             if (product != null)
             {
                 return Ok(product);
@@ -37,11 +45,36 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
         }
 
-        //[HttpPost("CreateProduct")]
-        //public async Task<IActionResult> Product()
-        //{
-        //need DTOs
-        //}
+        [HttpPost("CreateProduct")]
+        public async Task<IActionResult> Product(ProductCreationDto productCreationDto)
+        {
+            var category = await _unitOfWork.GetRepository<Category>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(c => c.Name == productCreationDto.categoryName);
+
+            if (category != null)
+            {
+                var newProduct = new Product
+                {
+                    Name = productCreationDto.Name,
+                    Description = productCreationDto.Description,
+                    Price = productCreationDto.Price,
+                    Category = category,
+                    ProductInBasket = new List<ProductInBasket>(),
+                    Subscription = new List<Subscription>()
+                };
+                var repoProduct = _unitOfWork.GetRepository<Product>();
+                repoProduct.Create(newProduct);
+                await _unitOfWork.SaveShangesAsync();
+
+                return Ok(newProduct);
+            }
+            else
+            {
+                return NotFound($"category with name {productCreationDto.categoryName} not found");
+            }
+        }
+        
 
         //[HttpPut("UpdateProduct")]
 

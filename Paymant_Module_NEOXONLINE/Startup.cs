@@ -20,6 +20,7 @@ namespace Paymant_Module_NEOXONLINE
         }
 
 
+
         public static void RegisterDAL(IServiceCollection services)
         {
 
