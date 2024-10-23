@@ -23,13 +23,19 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         [HttpGet("GetAllProducts")]
         public async Task<IActionResult> GetAllProducts()
         {
+            var products = await _unitOfWork.GetRepository<Product>()
+            .AsQueryable()
+            .Include(p => p.Category) // Загружаем связанную категорию
+            .ToListAsync();
+
+            return Ok(products);
             return Ok(await _unitOfWork.GetRepository<Product>().AsQueryable().ToListAsync());
         }
 
         [HttpGet("GetProductByName")]
         public async Task<IActionResult> GetProductByName(string productName)
         {
-            var product = _unitOfWork.GetRepository<Product>().AsQueryable().Where(p => p.Name.Equals(productName)).First();
+            var product = _unitOfWork.GetRepository<Product>().AsQueryable().Where(p => p.Name.Equals(productName)).Include(p => p.Category).First();
             if (product != null)
             {
                 return Ok(product);
@@ -41,7 +47,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         }
 
         [HttpPost("CreateProduct")]
-        public async Task<IActionResult> Product(ProductCreationDto productCreationDto)
+        public async Task<IActionResult> CreateProduct(ProductCreationDto productCreationDto)
         {
             var category = await _unitOfWork.GetRepository<Category>()
                 .AsQueryable()
@@ -54,7 +60,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                     Name = productCreationDto.Name,
                     Description = productCreationDto.Description,
                     Price = productCreationDto.Price,
-                    //Category = category,
+                    Category = category,
                     ProductInBasket = new List<ProductInBasket>(),
                     Subscription = new List<Subscription>()
                 };

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Payment.Domain.Identity
 {
-    public class User 
+    public class User : Entity<Guid>
     {
-        public Guid? Id { get; set; } // Guid 
+        //public Guid? Id { get; set; } // Guid 
         public required string FirstName { get; set; }
         public string? LastName { get; set; }
         public required string Email { get; set; }
