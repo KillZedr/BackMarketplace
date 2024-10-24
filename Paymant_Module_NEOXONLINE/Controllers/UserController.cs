@@ -61,10 +61,11 @@ namespace Paymant_Module_NEOXONLINE.Controllers
                 Сountry = userCreationDto.Сountry,
                 Address = userCreationDto.Address,
                 PhoneNumber = userCreationDto.PhoneNumber,
-                Basket = new List<Basket>(),
+                //Basket = new List<Basket>(),
             };
-
             _unitOfWork.GetRepository<User>().Create(newUser);
+            _unitOfWork.GetRepository<Basket>().Create(new Basket() { User = newUser });
+
             await _unitOfWork.SaveShangesAsync();
 
             return Ok(newUser);
@@ -79,11 +80,9 @@ namespace Paymant_Module_NEOXONLINE.Controllers
                 var claimsList = _tokenService.DecryptToken(token);
                 var user = _tokenService.GetUser(claimsList);
 
-/*                user.Basket.Append(await _unitOfWork.GetRepository<Basket>()
-                .AsReadOnlyQueryable()
-                .FirstOrDefaultAsync(b => b.User.FirstName.Equals(user.FirstName)));*/
-
                 _unitOfWork.GetRepository<User>().Create(user);
+                _unitOfWork.GetRepository<Basket>().Create(new Basket() { User = user });
+
                 await _unitOfWork.SaveShangesAsync();
                 return Ok(user);
             }
