@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Payment.Domain.DTOs
 {
-    internal class UserCreationDto
+    public class UserCreationDto
     {
         public required string FirstName { get; set; }
         public string? LastName { get; set; }

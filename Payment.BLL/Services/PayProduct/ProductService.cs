@@ -18,7 +18,7 @@ namespace Payment.BLL.Services.PayProduct
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<List<Product>> GetProductFromPriceToPrice(decimal fromAmmount, decimal toAmmount)
+        public async Task<List<Product>> GetProductsFromPriceToPrice(decimal fromAmmount, decimal toAmmount)
         {
             var productRepo = await _unitOfWork.GetRepository<Product>()
                 .AsQueryable()
