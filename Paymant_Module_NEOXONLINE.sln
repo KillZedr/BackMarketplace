@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paymant_Module_NEOXONLINE", "Paymant_Module_NEOXONLINE\Paymant_Module_NEOXONLINE.csproj", "{69F6685D-B6FF-4880-AF91-4ED53B00752D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E3CF25FD-5159-4070-986B-64E8A98BAF54} = {E3CF25FD-5159-4070-986B-64E8A98BAF54}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{9E942459-18FF-4E70-ADC0-3DFA44C21946}"
 EndProject
@@ -11,7 +14,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Payment.Domain", "Payment.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Payment.Application", "Payment.Application\Payment.Application.csproj", "{F799C5EC-6E9F-4BDC-ADEC-B39CBE69D26A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.BLL", "Payment.BLL\Payment.BLL.csproj", "{E3CF25FD-5159-4070-986B-64E8A98BAF54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Payment.BLL", "Payment.BLL\Payment.BLL.csproj", "{E3CF25FD-5159-4070-986B-64E8A98BAF54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

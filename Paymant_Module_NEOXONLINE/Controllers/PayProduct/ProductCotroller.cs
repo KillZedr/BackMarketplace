@@ -5,7 +5,9 @@ using Payment.Application.Payment_DAL.Contracts;
 using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
+using Payment.BLL.Services.PayProduct;
 using System.Xml.Linq;
+using Payment.BLL.Contracts.PayProduct;
 
 namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
 {
@@ -14,28 +16,45 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
     public class ProductCotroller : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IProductService _productService;
 
-        public ProductCotroller(IUnitOfWork unitOfWork)
+        public ProductCotroller(IUnitOfWork unitOfWork, IProductService productService)
         {
             _unitOfWork = unitOfWork;
+            _productService = productService;
         }
 
         [HttpGet("GetAllProducts")]
         public async Task<IActionResult> GetAllProducts()
         {
-            return Ok(await _unitOfWork.GetRepository<Product>()
-                .AsQueryable()
-                .Include(p => p.Category)
-                .ToListAsync());
+            return Ok(_unitOfWork.GetAllIncluding<Product>(p => p.Category).ToList());
+        }
+
+        [HttpGet("GetProductsFromPriceToPrice")]
+        public async Task<IActionResult> GetProductsFromPriceToPrice(decimal lowerLimit, decimal higherLimit)
+        {
+            if (lowerLimit < higherLimit)
+            {
+                var products = await _productService.GetProductsFromPriceToPrice(lowerLimit, higherLimit);
+                if(products.Count != 0)
+                {
+                    return Ok(products);
+                }
+                else 
+                { 
+                    return NotFound($"There are no products in range from {lowerLimit} to {higherLimit}"); 
+                }
+            }
+            else
+            {
+                return BadRequest($"lower limit must be less than higher limit");
+            }
         }
 
         [HttpGet("GetProductByName")]
         public async Task<IActionResult> GetProductByName(string productName)
         {
-            var product = _unitOfWork.GetRepository<Product>()
-                .AsQueryable()
-                .Include(p => p.Category)
-                .Where(p => p.Name.Equals(productName)).First();
+            var product = _unitOfWork.GetAllIncluding<Product>(p=>p.Category).First();
             if (product != null)
             {
                 return Ok(product);
@@ -51,7 +70,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         {
             var category = await _unitOfWork.GetRepository<Category>()
                 .AsQueryable()
-                .FirstOrDefaultAsync(c => c.Name.Equals(productCreationDto.categoryName));
+                .FirstOrDefaultAsync(c => c.Name.Equals(productCreationDto.CategoryName));
 
             if (category != null)
             {
@@ -71,7 +90,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
             else
             {
-                return NotFound($"category with name {productCreationDto.categoryName} not found");
+                return NotFound($"category with name {productCreationDto.CategoryName} not found");
             }
         }
 
@@ -86,13 +105,13 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             {
                 var category = await _unitOfWork.GetRepository<Category>()
                     .AsQueryable()
-                    .FirstOrDefaultAsync(c => c.Name.Equals(productDto.categoryName));
+                    .FirstOrDefaultAsync(c => c.Name.Equals(productDto.CategoryName));
                 if (category != null)
                 {
                     product.Name = productDto.Name;
                     product.Description = productDto.Description;
                     product.Price = productDto.Price;
-                    //product.Category = category;
+                    product.Category = category;
 
                     _unitOfWork.GetRepository<Product>().Update(product);
                     await _unitOfWork.SaveShangesAsync();
@@ -101,7 +120,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                 }
                 else
                 {
-                    return NotFound($"category with name {productDto.categoryName} not found");
+                    return NotFound($"category with name {productDto.CategoryName} not found");
                 }
             }
             else

@@ -12,6 +12,8 @@ using ILogger = Serilog.ILogger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Payment.BLL.Services.PayProduct;
+using Payment.BLL.Contracts.PayProduct;
 
 namespace Paymant_Module_NEOXONLINE
 {
@@ -45,6 +47,7 @@ namespace Paymant_Module_NEOXONLINE
             builder.Services.AddAuthorization();
 
             builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
         }
 
 

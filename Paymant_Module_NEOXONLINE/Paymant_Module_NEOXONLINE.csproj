@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Payment.Application\Payment.Application.csproj" />
+    <ProjectReference Include="..\Payment.BLL\Payment.BLL.csproj" />
   </ItemGroup>
 
 </Project>
