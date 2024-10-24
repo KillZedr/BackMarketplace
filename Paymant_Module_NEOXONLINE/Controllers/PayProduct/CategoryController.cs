@@ -21,7 +21,8 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         [HttpGet("GetAllCategories")]
         public async Task<IActionResult> GetAllCategories()
         {
-            var categories = await _unitOfWork.GetRepository<Category>().AsReadOnlyQueryable().ToListAsync();
+            var categories = await _unitOfWork.GetAllIncluding<Category>(c => c.Products).ToListAsync();
+                
             return Ok(categories);
         }
 
@@ -30,6 +31,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         {
             var findCategory = await _unitOfWork.GetRepository<Category>()
                 .AsReadOnlyQueryable()
+                .Include(c => c.Products)
                 .FirstOrDefaultAsync(c => c.Name == findCategoryName);
             if (findCategory != null)
             {

@@ -23,19 +23,19 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         [HttpGet("GetAllProducts")]
         public async Task<IActionResult> GetAllProducts()
         {
-            var products = await _unitOfWork.GetRepository<Product>()
-            .AsQueryable()
-            .Include(p => p.Category) // Загружаем связанную категорию
-            .ToListAsync();
-
-            return Ok(products);
-            return Ok(await _unitOfWork.GetRepository<Product>().AsQueryable().ToListAsync());
+            return Ok(await _unitOfWork.GetRepository<Product>()
+                .AsQueryable()
+                .Include(p => p.Category)
+                .ToListAsync());
         }
 
         [HttpGet("GetProductByName")]
         public async Task<IActionResult> GetProductByName(string productName)
         {
-            var product = _unitOfWork.GetRepository<Product>().AsQueryable().Where(p => p.Name.Equals(productName)).Include(p => p.Category).First();
+            var product = _unitOfWork.GetRepository<Product>()
+                .AsQueryable()
+                .Include(p => p.Category)
+                .Where(p => p.Name.Equals(productName)).First();
             if (product != null)
             {
                 return Ok(product);

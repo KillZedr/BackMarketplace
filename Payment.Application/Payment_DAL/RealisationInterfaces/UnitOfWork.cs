@@ -4,6 +4,7 @@ using Payment.Application.Payment_DAL.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,5 +41,11 @@ namespace Payment.Application.Payment_DAL.RealisationInterfaces
         {
             return new Repository<TEntity>(_dbContext);
         }
+
+        public IQueryable<TEntity> GetAllIncluding<TEntity>(params Expression<Func<TEntity, object>>[] includes) where TEntity : class
+        {
+            return _dbContext.Set<TEntity>().IncludeAll(includes);
+        }
+
     }
 }
