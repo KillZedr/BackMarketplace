@@ -112,12 +112,12 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                 }
                 else
                 {
-                    return NotFound($"category with name {productDto.CategoryName} not found");
+                    return NotFound($"Category with name {productDto.CategoryName} not found");
                 }
             }
             else
             {
-                return NotFound($"product with name {productDto.Name} not found");
+                return NotFound($"Product with name {productDto.Name} not found");
             }
         }
 

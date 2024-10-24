@@ -28,6 +28,26 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         }
 
 
+        [HttpDelete("ProductInBasket")]
 
+        public async Task<IActionResult> DeleteProductInBasket (string productName)
+        {
+            var findProductInBasket = await _unitOfWork.GetRepository<ProductInBasket>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(pib => pib.Product.Name == productName);
+            if (findProductInBasket != null)
+            {
+                var repoProductInBasket = _unitOfWork.GetRepository<ProductInBasket>();
+                repoProductInBasket.Delete(findProductInBasket);
+                await _unitOfWork.SaveShangesAsync();
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new { message = $"Invalid source data. Not Found Product in basket with {productName} name" });
+            }
+
+           
+        }
     }
 }
