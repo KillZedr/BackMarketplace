@@ -18,7 +18,7 @@ namespace Payment.BLL.Services.PayProduct
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<List<Product>> GetProductFromAmmountToAmmount(decimal fromAmmount, decimal toAmmount)
+        public async Task<List<Product>> GetProductFromPriceToPrice(decimal fromAmmount, decimal toAmmount)
         {
             var productRepo = await _unitOfWork.GetRepository<Product>()
                 .AsQueryable()
@@ -27,9 +27,11 @@ namespace Payment.BLL.Services.PayProduct
 
             if (productRepo != null)
             {
+                
                 foreach (var product in productRepo)
                 {
-                    if (product.Price > fromAmmount || product.Price < toAmmount)
+                    
+                    if (product.Price >= fromAmmount && product.Price <= toAmmount)
                     {
                         productFromAmmountToAmmount.Add(product);
                     }

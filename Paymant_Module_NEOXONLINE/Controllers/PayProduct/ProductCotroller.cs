@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
+using Payment.BLL.Contracts.PayProduct;
 using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
@@ -13,10 +14,12 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
     public class ProductCotroller : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IProductService _productService;
 
-        public ProductCotroller(IUnitOfWork unitOfWork)
+        public ProductCotroller(IUnitOfWork unitOfWork, IProductService productService)
         {
             _unitOfWork = unitOfWork;
+            _productService = productService;
         }
 
         [HttpGet("GetAllProducts")]
@@ -45,12 +48,19 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
         }
 
+        [HttpGet("ProductFromPriceToPrice")] 
+        public async Task<IActionResult> GetProductFromPriceToPrice(decimal fromAmmount, decimal toAmmount)
+        {
+            var result = await _productService.GetProductFromPriceToPrice(fromAmmount, toAmmount);
+            return Ok(result);
+        }
+
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> Product(ProductCreationDto productCreationDto)
         {
             var category = await _unitOfWork.GetRepository<Category>()
                 .AsQueryable()
-                .FirstOrDefaultAsync(c => c.Name == productCreationDto.categoryName);
+                .FirstOrDefaultAsync(c => c.Name == productCreationDto.CategoryName);
 
             if (category != null)
             {
@@ -71,7 +81,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
             else
             {
-                return NotFound($"category with name {productCreationDto.categoryName} not found");
+                return NotFound($"category with name {productCreationDto.CategoryName} not found");
             }
         }
 
@@ -87,7 +97,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             {
                 var category = await _unitOfWork.GetRepository<Category>()
                     .AsQueryable()
-                    .FirstOrDefaultAsync(c => c.Name.Equals(productDto.categoryName));
+                    .FirstOrDefaultAsync(c => c.Name.Equals(productDto.CategoryName));
                 if (category != null)
                 {
                     product.Name = productDto.Name;
@@ -102,7 +112,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                 }
                 else
                 {
-                    return NotFound($"category with name {productDto.categoryName} not found");
+                    return NotFound($"category with name {productDto.CategoryName} not found");
                 }
             }
             else

@@ -1,4 +1,5 @@
 
+using Payment.BLL;
 using Serilog;
 
 namespace Paymant_Module_NEOXONLINE
@@ -22,7 +23,8 @@ namespace Paymant_Module_NEOXONLINE
             builder.Services.AddSwaggerGen();
 
             Startup.AddServices(builder);
-           
+            ModuleHead.RegisterModule(builder.Services);
+
             var app = builder.Build();
 
             DbInitializer.InitializeDb(app.Services);
