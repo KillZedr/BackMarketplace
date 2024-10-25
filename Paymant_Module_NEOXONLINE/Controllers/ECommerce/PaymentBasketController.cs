@@ -28,6 +28,25 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             return Ok(repoPayment);
         }
 
+
+        [HttpGet("PaymentBasketById")]
+
+
+        public async Task<IActionResult> GetPaymentBasketById (int id)
+        {
+            var findPaymentBasket = await _unitOfWork.GetAllIncluding<PaymentBasket>(pib => pib.Basket)
+                .FirstOrDefaultAsync(pib => pib.BasketId == id);
+
+            if (findPaymentBasket != null)
+            {
+                return Ok(findPaymentBasket);
+            }
+            else
+            {
+                return BadRequest(new { message = $"Invalid source data. Not Found Payment with {id} Id"});
+            }
+        }
+
         [HttpDelete("Payment")]
 
         public async Task<IActionResult> DeletePayment(string source)
