@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
+using Payment.Application.Payment_DAL.RealisationInterfaces;
 using Payment.Domain.ECommerce;
+using Payment.Domain.PayProduct;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 {
@@ -19,24 +21,66 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         }
 
 
-        [HttpGet("AllProductInBasket")]
+        [HttpGet("AllProductsInBasket")]
 
-        public async Task<IActionResult> GetAllProductInBasket()
+        public async Task<IActionResult> GetAllProductsInBasket()
         {
             var repoProductInBasket = await _unitOfWork.GetAllIncluding<ProductInBasket>(pib => pib.Product).ToListAsync();
             return Ok(repoProductInBasket);
         }
 
 
-        [HttpDelete("ProductInBasket")]
+        [HttpGet("GetUsersProductsInBasket")]
 
-        public async Task<IActionResult> DeleteProductInBasket (string productName)
+        public async Task<IActionResult> GetUsersProductsInBasket(string username)
+        {
+            var repoProductInBasket = await _unitOfWork.GetAllIncluding<ProductInBasket>(pib => pib.Product).Where(pib=>pib.Basket.User.FirstName.Equals(username)).ToListAsync();
+            return Ok(repoProductInBasket);
+        }
+
+        [HttpPost("CreateProductInBasket")]
+
+        public async Task<IActionResult> CreateProductInBasket(string productName, string username)
+        {
+            var product = _unitOfWork.GetRepository<Product>()
+                .AsQueryable().First(p => p.Name.Equals(productName));
+            if(product != null)
+            {
+                var basket = _unitOfWork.GetAllIncluding<Basket>(b => b.User)
+                    .AsQueryable().First(b => b.User.FirstName.Equals(username));
+                if (basket != null)
+                {
+                    var p = new ProductInBasket()
+                    {
+                        Basket = basket,
+                        Product = product
+                    };
+                    _unitOfWork.GetRepository<ProductInBasket>().Create(p);
+                    await _unitOfWork.SaveShangesAsync();
+                    return Ok(p);
+                }
+                else
+                {
+                    return NotFound($"user with name {username} not found");
+                }
+            }
+            else
+            {
+                return NotFound($"product with name {productName} not found");
+            }
+        }
+
+
+        [HttpDelete("DeleteProductInBasket")]
+
+        public async Task<IActionResult> DeleteProductInBasket (string productName, string username)
         {
             var findProductInBasket = await _unitOfWork.GetRepository<ProductInBasket>()
                 .AsQueryable()
-                .FirstOrDefaultAsync(pib => pib.Product.Name == productName);
+                .FirstOrDefaultAsync(pib => pib.Product.Name.Equals(productName) && pib.Basket.User.FirstName.Equals(username));
             if (findProductInBasket != null)
             {
+
                 var repoProductInBasket = _unitOfWork.GetRepository<ProductInBasket>();
                 repoProductInBasket.Delete(findProductInBasket);
                 await _unitOfWork.SaveShangesAsync();
@@ -44,10 +88,8 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             }
             else
             {
-                return BadRequest(new { message = $"Invalid source data. Not Found Product in basket with {productName} name" });
-            }
-
-           
+                return BadRequest(new { message = $"Invalid source data. Not Found Product in basket with {productName} name and {username} username" });
+            }           
         }
     }
 }

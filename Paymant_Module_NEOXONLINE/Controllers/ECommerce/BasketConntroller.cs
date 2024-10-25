@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.Domain.ECommerce;
+using Payment.Domain.Identity;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 {
@@ -20,10 +21,31 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 
         [HttpGet("AllBaskets")]
 
-        public async Task<IActionResult> GetAllBascets()
+        public async Task<IActionResult> GetAllBaskets()
         {
             var repoBasket = await _unitOfWork.GetAllIncluding<Basket>(b => b.ProductInBasket).ToListAsync();
             return Ok(repoBasket);
+        }
+
+        [HttpPost("CreateBasket")]
+
+        public async Task<IActionResult> CreateBasket(string username)
+        {
+            var basket = _unitOfWork.GetRepository<Basket>()
+                .AsReadOnlyQueryable().First(b => b.User.FirstName.Equals(username));
+            if (basket != null)
+            {
+                return BadRequest($"user {username} alredy has basket");
+            }
+            else
+            {
+                _unitOfWork.GetRepository<Basket>().Create(new Basket() 
+                { 
+                    User = _unitOfWork.GetRepository<User>()
+                        .AsReadOnlyQueryable().First(u => u.FirstName.Equals(username)) 
+                });
+                return Ok();
+            }
         }
 
 
@@ -43,7 +65,6 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
                 await _unitOfWork.SaveShangesAsync();
 
                 return Ok();
-
             }
             else
             {

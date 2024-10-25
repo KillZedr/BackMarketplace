@@ -6,6 +6,9 @@ using Payment.BLL.Contracts.PayProduct;
 using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
+using Payment.BLL.Services.PayProduct;
+using System.Xml.Linq;
+using Payment.BLL.Contracts.PayProduct;
 
 namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
 {
@@ -25,19 +28,34 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         [HttpGet("GetAllProducts")]
         public async Task<IActionResult> GetAllProducts()
         {
-            return Ok(await _unitOfWork.GetRepository<Product>()
-                .AsQueryable()
-                .Include(p => p.Category)
-                .ToListAsync());
+            return Ok(_unitOfWork.GetAllIncluding<Product>(p => p.Category).ToList());
+        }
+
+        [HttpGet("GetProductsFromPriceToPrice")]
+        public async Task<IActionResult> GetProductsFromPriceToPrice(decimal lowerLimit, decimal higherLimit)
+        {
+            if (lowerLimit < higherLimit)
+            {
+                var products = await _productService.GetProductsFromPriceToPrice(lowerLimit, higherLimit);
+                if(products.Count != 0)
+                {
+                    return Ok(products);
+                }
+                else 
+                { 
+                    return NotFound($"There are no products in range from {lowerLimit} to {higherLimit}"); 
+                }
+            }
+            else
+            {
+                return BadRequest($"lower limit must be less than higher limit");
+            }
         }
 
         [HttpGet("GetProductByName")]
         public async Task<IActionResult> GetProductByName(string productName)
         {
-            var product = _unitOfWork.GetRepository<Product>()
-                .AsQueryable()
-                .Include(p => p.Category)
-                .Where(p => p.Name.Equals(productName)).First();
+            var product = _unitOfWork.GetAllIncluding<Product>(p=>p.Category).First();
             if (product != null)
             {
                 return Ok(product);
@@ -51,12 +69,12 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
         [HttpGet("ProductFromPriceToPrice")] 
         public async Task<IActionResult> GetProductFromPriceToPrice(decimal fromAmmount, decimal toAmmount)
         {
-            var result = await _productService.GetProductFromPriceToPrice(fromAmmount, toAmmount);
+            var result = await _productService.GetProductsFromPriceToPrice(fromAmmount, toAmmount);
             return Ok(result);
         }
 
         [HttpPost("CreateProduct")]
-        public async Task<IActionResult> Product(ProductCreationDto productCreationDto)
+        public async Task<IActionResult> CreateProduct(ProductCreationDto productCreationDto)
         {
             var category = await _unitOfWork.GetRepository<Category>()
                 .AsQueryable()
@@ -73,8 +91,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                     ProductInBasket = new List<ProductInBasket>(),
                     Subscription = new List<Subscription>()
                 };
-                var repoProduct = _unitOfWork.GetRepository<Product>();
-                repoProduct.Create(newProduct);
+                _unitOfWork.GetRepository<Product>().Create(newProduct);
                 await _unitOfWork.SaveShangesAsync();
 
                 return Ok(newProduct);
@@ -84,7 +101,6 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                 return NotFound($"category with name {productCreationDto.CategoryName} not found");
             }
         }
-
 
         [HttpPut("UpdateProduct")]
 
@@ -103,7 +119,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                     product.Name = productDto.Name;
                     product.Description = productDto.Description;
                     product.Price = productDto.Price;
-                    //product.Category = category;
+                    product.Category = category;
 
                     _unitOfWork.GetRepository<Product>().Update(product);
                     await _unitOfWork.SaveShangesAsync();
