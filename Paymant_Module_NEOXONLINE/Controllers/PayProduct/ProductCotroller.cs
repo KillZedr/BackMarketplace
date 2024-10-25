@@ -66,12 +66,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
         }
 
-        [HttpGet("ProductFromPriceToPrice")] 
-        public async Task<IActionResult> GetProductFromPriceToPrice(decimal fromAmmount, decimal toAmmount)
-        {
-            var result = await _productService.GetProductsFromPriceToPrice(fromAmmount, toAmmount);
-            return Ok(result);
-        }
+      
 
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct(ProductCreationDto productCreationDto)
