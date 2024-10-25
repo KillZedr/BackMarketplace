@@ -9,6 +9,8 @@ namespace Payment.BLL.Contracts.ECommerce
     internal interface ISubscriptionService:IService
     {
         void GetInfoAboutUsersSubscription(string username);
-        public void Subscribe();
+        void Subscribe(string username, bool isEmailNotificationRequired, bool isWebNotificationRequired);
+        void NotifyByEmail(string username);
+        void NotifyByWeb(string username);
     }
 }

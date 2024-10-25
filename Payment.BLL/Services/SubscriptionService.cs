@@ -14,8 +14,29 @@ namespace Payment.BLL.Services
             throw new NotImplementedException();
         }
 
-        public void Subscribe()
+        public void Subscribe(string username, bool isEmailNotificationRequired, bool isWebNotificationRequired)
         {
+            if(isEmailNotificationRequired)
+            {
+                NotifyByEmail(username);
+            }
+            if (isWebNotificationRequired)
+            {
+                NotifyByWeb(username);
+            }
+        }
+
+        public void NotifyByEmail(string username) 
+        { 
+            //todo
+            //get user by username, send notification to user's email
+            throw new NotImplementedException(); 
+        }
+
+        public void NotifyByWeb(string username)
+        {
+            //todo
+            //get user by username, send notification to user's account
             throw new NotImplementedException();
         }
     }
