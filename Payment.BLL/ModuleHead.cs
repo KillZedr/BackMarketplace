@@ -39,7 +39,7 @@ namespace Payment.BLL
 
             foreach ( var serviceToInterface in interfaceToImplementationMap )
             {
-                services.AddTransient(serviceToInterface.Interface, serviceToInterface.Implementation);
+                services.AddScoped(serviceToInterface.Interface, serviceToInterface.Implementation);
             }
         }
     }

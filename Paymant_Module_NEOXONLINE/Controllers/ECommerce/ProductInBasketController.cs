@@ -25,7 +25,10 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 
         public async Task<IActionResult> GetAllProductsInBasket()
         {
-            var repoProductInBasket = await _unitOfWork.GetAllIncluding<ProductInBasket>(pib => pib.Product).ToListAsync();
+            var repoProductInBasket = await _unitOfWork.GetAllIncluding<ProductInBasket>(pib => pib.Product)
+                .Include(pib => pib.Basket)
+                .ThenInclude(b => b.PaymentBasket)
+                .ToListAsync();
             return Ok(repoProductInBasket);
         }
 
@@ -50,14 +53,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
                     .AsQueryable().First(b => b.User.FirstName.Equals(username));
                 if (basket != null)
                 {
-                    var p = new ProductInBasket()
+                    var productInBasket = new ProductInBasket()
                     {
                         Basket = basket,
                         Product = product
                     };
-                    _unitOfWork.GetRepository<ProductInBasket>().Create(p);
+                    _unitOfWork.GetRepository<ProductInBasket>().Create(productInBasket);
                     await _unitOfWork.SaveShangesAsync();
-                    return Ok(p);
+                    return Ok(productInBasket);
                 }
                 else
                 {

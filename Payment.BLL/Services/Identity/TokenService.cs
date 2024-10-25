@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Paymant_Module_NEOXONLINE.Services.Abstractions;
+using Payment.BLL.Contracts.Identity.Abstraction;
 using Payment.Domain.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using ILogger = Payment.BLL.Contracts;
 
-namespace Paymant_Module_NEOXONLINE.Services
+namespace Payment.BLL.Contracts
 {
     public class TokenService : ITokenService
     {

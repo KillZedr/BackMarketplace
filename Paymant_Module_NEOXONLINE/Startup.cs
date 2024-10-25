@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Paymant_Module_NEOXONLINE.Contract.Exeptions;
-using Paymant_Module_NEOXONLINE.Services.Abstractions;
-using Paymant_Module_NEOXONLINE.Services;
 using Payment.Application;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.Application.Payment_DAL.RealisationInterfaces;
@@ -44,10 +42,6 @@ namespace Paymant_Module_NEOXONLINE
                             Encoding.UTF8.GetBytes(jwtKey))
                     };
                 });
-            builder.Services.AddAuthorization();
-
-            builder.Services.AddScoped<ITokenService, TokenService>();
-            builder.Services.AddScoped<IProductService, ProductService>();
         }
 
 
@@ -63,7 +57,7 @@ namespace Paymant_Module_NEOXONLINE
             });
 
             services.AddScoped<DbContext, Payment_DbContext>();
-            
+
             services.AddScoped<IUnitOfWork>(prov =>
             {
                 var context = prov.GetRequiredService<DbContext>();

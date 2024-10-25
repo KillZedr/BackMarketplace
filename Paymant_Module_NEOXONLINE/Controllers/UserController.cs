@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Paymant_Module_NEOXONLINE.Services.Abstractions;
 using Payment.Application.Payment_DAL.Contracts;
+using Payment.BLL.Contracts.Identity.Abstraction;
 using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.Identity;
@@ -98,7 +98,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers
 
         [HttpPut("UpdateUser")]
 
-        public async Task<IActionResult> UpdateUser(UserCreationDto userDto)
+        public async Task<IActionResult> UpdateUser([FromForm]UserCreationDto userDto)
         {
             var user = await _unitOfWork.GetRepository<User>()
                 .AsReadOnlyQueryable()
