@@ -9,7 +9,6 @@ namespace Payment.Domain.Identity
 {
     public class User : Entity<Guid>
     {
-        //public Guid? Id { get; set; } // Guid 
         public required string FirstName { get; set; }
         public string? LastName { get; set; }
         public required string Email { get; set; }
@@ -18,6 +17,7 @@ namespace Payment.Domain.Identity
         public required string PhoneNumber { get; set; }
 
 
-        public virtual IEnumerable<Basket> Basket { get; set; } = new List<Basket>();
+        public virtual ICollection<Basket> Basket { get; set; } = new List<Basket>();
+        public virtual ICollection<Subscription>? Subscriptions { get; set; } = new List<Subscription>();
     }
 }

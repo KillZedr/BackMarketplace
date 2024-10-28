@@ -162,3 +162,177 @@
 2024-10-25 14:47:07.433 +03:00 [INF] Migration(s) applied!
 2024-10-25 14:50:15.106 +03:00 [INF] Applying migrations...
 2024-10-25 14:50:17.004 +03:00 [INF] Migration(s) applied!
+2024-10-25 16:27:21.599 +03:00 [INF] Applying migrations...
+2024-10-25 16:27:24.400 +03:00 [INF] Migration(s) applied!
+2024-10-28 12:44:01.327 +03:00 [INF] Applying migrations...
+2024-10-28 12:44:03.401 +03:00 [INF] Migration(s) applied!
+2024-10-28 12:46:38.771 +03:00 [INF] Applying migrations...
+2024-10-28 12:46:40.387 +03:00 [INF] Migration(s) applied!
+2024-10-28 12:47:33.469 +03:00 [INF] Applying migrations...
+2024-10-28 12:47:34.829 +03:00 [INF] Migration(s) applied!
+2024-10-28 13:12:51.514 +03:00 [INF] Applying migrations...
+2024-10-28 13:12:53.235 +03:00 [INF] Migration(s) applied!
+2024-10-28 13:25:35.573 +03:00 [INF] Applying migrations...
+2024-10-28 13:25:38.290 +03:00 [ERR] Database.Migrate failed!
+2024-10-28 13:25:38.331 +03:00 [ERR] Npgsql.PostgresException (0x80004005): 42703: column "PhoneNamber" does not exist
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Paymant_Module_NEOXONLINE.DbInitializer.ApplyMigrations(IServiceProvider serviceProvider) in C:\Users\Илья\Desktop\GitNeoxonline\NEOXONLINE_PaymentMicroservices\Paymant_Module_NEOXONLINE\DbInitializer.cs:line 27
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column "PhoneNamber" does not exist
+    File: tablecmds.c
+    Line: 3789
+    Routine: renameatt_internal
+2024-10-28 13:31:05.481 +03:00 [INF] Applying migrations...
+2024-10-28 13:31:07.612 +03:00 [ERR] Database.Migrate failed!
+2024-10-28 13:31:07.682 +03:00 [ERR] Npgsql.PostgresException (0x80004005): 42701: column "PhoneNumber" of relation "User" already exists
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Paymant_Module_NEOXONLINE.DbInitializer.ApplyMigrations(IServiceProvider serviceProvider) in C:\Users\Илья\Desktop\GitNeoxonline\NEOXONLINE_PaymentMicroservices\Paymant_Module_NEOXONLINE\DbInitializer.cs:line 27
+  Exception data:
+    Severity: ERROR
+    SqlState: 42701
+    MessageText: column "PhoneNumber" of relation "User" already exists
+    File: tablecmds.c
+    Line: 7425
+    Routine: check_for_column_name_collision
+2024-10-28 13:37:11.505 +03:00 [INF] Applying migrations...
+2024-10-28 13:37:13.174 +03:00 [ERR] Database.Migrate failed!
+2024-10-28 13:37:42.912 +03:00 [ERR] Npgsql.PostgresException (0x80004005): 42P07: relation "Subscription" already exists
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Paymant_Module_NEOXONLINE.DbInitializer.ApplyMigrations(IServiceProvider serviceProvider) in C:\Users\Илья\Desktop\GitNeoxonline\NEOXONLINE_PaymentMicroservices\Paymant_Module_NEOXONLINE\DbInitializer.cs:line 27
+  Exception data:
+    Severity: ERROR
+    SqlState: 42P07
+    MessageText: relation "Subscription" already exists
+    File: heap.c
+    Line: 1161
+    Routine: heap_create_with_catalog
+2024-10-28 13:40:27.932 +03:00 [INF] Applying migrations...
+2024-10-28 13:40:29.879 +03:00 [INF] Migration(s) applied!
+2024-10-28 13:43:48.983 +03:00 [INF] Applying migrations...
+2024-10-28 13:43:51.037 +03:00 [ERR] Database.Migrate failed!
+2024-10-28 13:43:51.093 +03:00 [ERR] Npgsql.PostgresException (0x80004005): 42P07: relation "Category" already exists
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Paymant_Module_NEOXONLINE.DbInitializer.ApplyMigrations(IServiceProvider serviceProvider) in C:\Users\Илья\Desktop\GitNeoxonline\NEOXONLINE_PaymentMicroservices\Paymant_Module_NEOXONLINE\DbInitializer.cs:line 27
+  Exception data:
+    Severity: ERROR
+    SqlState: 42P07
+    MessageText: relation "Category" already exists
+    File: heap.c
+    Line: 1161
+    Routine: heap_create_with_catalog
+2024-10-28 13:48:29.252 +03:00 [INF] Applying migrations...
+2024-10-28 13:48:31.670 +03:00 [ERR] Database.Migrate failed!
+2024-10-28 13:48:31.725 +03:00 [ERR] Npgsql.PostgresException (0x80004005): 42P07: relation "Category" already exists
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Paymant_Module_NEOXONLINE.DbInitializer.ApplyMigrations(IServiceProvider serviceProvider) in C:\Users\Илья\Desktop\GitNeoxonline\NEOXONLINE_PaymentMicroservices\Paymant_Module_NEOXONLINE\DbInitializer.cs:line 27
+  Exception data:
+    Severity: ERROR
+    SqlState: 42P07
+    MessageText: relation "Category" already exists
+    File: heap.c
+    Line: 1161
+    Routine: heap_create_with_catalog
+2024-10-28 13:51:04.198 +03:00 [INF] Applying migrations...
+2024-10-28 13:51:06.257 +03:00 [ERR] Database.Migrate failed!
+2024-10-28 13:51:06.294 +03:00 [ERR] Npgsql.PostgresException (0x80004005): 42P07: relation "User" already exists
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Paymant_Module_NEOXONLINE.DbInitializer.ApplyMigrations(IServiceProvider serviceProvider) in C:\Users\Илья\Desktop\GitNeoxonline\NEOXONLINE_PaymentMicroservices\Paymant_Module_NEOXONLINE\DbInitializer.cs:line 27
+  Exception data:
+    Severity: ERROR
+    SqlState: 42P07
+    MessageText: relation "User" already exists
+    File: heap.c
+    Line: 1161
+    Routine: heap_create_with_catalog
+2024-10-28 13:53:42.392 +03:00 [INF] Applying migrations...
+2024-10-28 13:53:45.765 +03:00 [INF] Migration(s) applied!
+2024-10-28 13:58:09.890 +03:00 [INF] Applying migrations...
+2024-10-28 13:58:12.424 +03:00 [INF] Migration(s) applied!
+2024-10-28 14:42:20.195 +03:00 [INF] Applying migrations...
+2024-10-28 14:42:22.220 +03:00 [INF] Migration(s) applied!

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Payment.Application.Migrations
 {
     /// <inheritdoc />
-    public partial class FirstMigration : Migration
+    public partial class AddSubscribeMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,7 +35,7 @@ namespace Payment.Application.Migrations
                     Email = table.Column<string>(type: "text", nullable: false),
                     Сountry = table.Column<string>(type: "text", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
-                    PhoneNamber = table.Column<string>(type: "text", nullable: false)
+                    PhoneNumber = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -83,6 +83,41 @@ namespace Payment.Application.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Basket_User_UserId1",
+                        column: x => x.UserId1,
+                        principalTable: "User",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Subscription",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsPaid = table.Column<bool>(type: "boolean", nullable: false),
+                    UserId1 = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Subscription", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Subscription_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Subscription_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Subscription_User_UserId1",
                         column: x => x.UserId1,
                         principalTable: "User",
                         principalColumn: "Id");
@@ -140,8 +175,7 @@ namespace Payment.Application.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Basket_UserId",
                 table: "Basket",
-                column: "UserId",
-                unique: true);
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Basket_UserId1",
@@ -168,6 +202,21 @@ namespace Payment.Application.Migrations
                 name: "IX_ProductInBasket_ProductId",
                 table: "ProductInBasket",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subscription_ProductId",
+                table: "Subscription",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subscription_UserId",
+                table: "Subscription",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subscription_UserId1",
+                table: "Subscription",
+                column: "UserId1");
         }
 
         /// <inheritdoc />
@@ -178,6 +227,9 @@ namespace Payment.Application.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProductInBasket");
+
+            migrationBuilder.DropTable(
+                name: "Subscription");
 
             migrationBuilder.DropTable(
                 name: "Basket");

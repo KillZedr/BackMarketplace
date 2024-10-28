@@ -12,8 +12,8 @@ using Payment.Application;
 namespace Payment.Application.Migrations
 {
     [DbContext(typeof(Payment_DbContext))]
-    [Migration("20241018112837_UserAddEntitiGuidMigration")]
-    partial class UserAddEntitiGuidMigration
+    [Migration("20241028114039_AddSubscribeMigration")]
+    partial class AddSubscribeMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,8 +41,7 @@ namespace Payment.Application.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.HasIndex("UserId1");
 
@@ -103,6 +102,43 @@ namespace Payment.Application.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductInBasket");
+                });
+
+            modelBuilder.Entity("Payment.Domain.ECommerce.Subscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("Subscription");
                 });
 
             modelBuilder.Entity("Payment.Domain.Identity.User", b =>
@@ -188,8 +224,8 @@ namespace Payment.Application.Migrations
             modelBuilder.Entity("Payment.Domain.ECommerce.Basket", b =>
                 {
                     b.HasOne("Payment.Domain.Identity.User", "User")
-                        .WithOne()
-                        .HasForeignKey("Payment.Domain.ECommerce.Basket", "UserId")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -230,6 +266,29 @@ namespace Payment.Application.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Payment.Domain.ECommerce.Subscription", b =>
+                {
+                    b.HasOne("Payment.Domain.PayProduct.Product", "Product")
+                        .WithMany("Subscription")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Payment.Domain.Identity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Payment.Domain.Identity.User", null)
+                        .WithMany("Subscriptions")
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Payment.Domain.PayProduct.Product", b =>
                 {
                     b.HasOne("Payment.Domain.PayProduct.Category", "Category")
@@ -249,6 +308,8 @@ namespace Payment.Application.Migrations
             modelBuilder.Entity("Payment.Domain.Identity.User", b =>
                 {
                     b.Navigation("Basket");
+
+                    b.Navigation("Subscriptions");
                 });
 
             modelBuilder.Entity("Payment.Domain.PayProduct.Category", b =>
@@ -259,6 +320,8 @@ namespace Payment.Application.Migrations
             modelBuilder.Entity("Payment.Domain.PayProduct.Product", b =>
                 {
                     b.Navigation("ProductInBasket");
+
+                    b.Navigation("Subscription");
                 });
 #pragma warning restore 612, 618
         }

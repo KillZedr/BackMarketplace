@@ -1,4 +1,5 @@
-﻿using Payment.Domain.PayProduct;
+﻿using Payment.Domain.Identity;
+using Payment.Domain.PayProduct;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace Payment.Domain.ECommerce
     public class Subscription : Entity<int>
     {
         public Guid UserId { get; set; }
+        public User User { get; set; }
         public Product Product { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
