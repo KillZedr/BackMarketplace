@@ -12,12 +12,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Payment.BLL.Services.PayProduct;
 using Payment.BLL.Contracts.PayProduct;
+using Stripe;
 
 namespace Paymant_Module_NEOXONLINE
 {
     public class Startup
     {
-
         internal static void AddServices(WebApplicationBuilder builder)
         {
             AddSerilog(builder);
@@ -44,11 +44,13 @@ namespace Paymant_Module_NEOXONLINE
                 });
         }
 
-
+        public static void ConfigureStripe(WebApplicationBuilder builder)
+        {
+            StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
+        }
 
         public static void RegisterDAL(IServiceCollection services)
         {
-
             services.AddTransient<DbContextOptions<Payment_DbContext>>(provider =>
             {
                 var builder = new DbContextOptionsBuilder<Payment_DbContext>();
@@ -67,7 +69,6 @@ namespace Paymant_Module_NEOXONLINE
 
         internal static void AddSerilog(WebApplicationBuilder builder)
         {
-
             var loggerConfig = new LoggerConfiguration()
                 .WriteTo.Console()
                 .WriteTo.File("log.txt", rollingInterval: RollingInterval.Month,

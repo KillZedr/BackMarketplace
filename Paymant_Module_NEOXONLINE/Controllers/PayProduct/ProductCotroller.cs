@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.PayProduct;
-using Payment.Domain.DTOs;
+using Payment.BLL.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
 using Payment.BLL.Services.PayProduct;
 using System.Xml.Linq;
 using Payment.BLL.Contracts.PayProduct;
+using Payment.BLL.Contracts.Payment;
 
 namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
 {
@@ -18,11 +19,13 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IProductService _productService;
+        private readonly IStripeService _stripeService;
 
-        public ProductCotroller(IUnitOfWork unitOfWork, IProductService productService)
+        public ProductCotroller(IUnitOfWork unitOfWork, IProductService productService, IStripeService stripeService)
         {
             _unitOfWork = unitOfWork;
             _productService = productService;
+            _stripeService = stripeService;
         }
 
         [HttpGet("GetAllProducts")]
@@ -66,13 +69,6 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
         }
 
-        [HttpGet("ProductFromPriceToPrice")] 
-        public async Task<IActionResult> GetProductFromPriceToPrice(decimal fromAmmount, decimal toAmmount)
-        {
-            var result = await _productService.GetProductsFromPriceToPrice(fromAmmount, toAmmount);
-            return Ok(result);
-        }
-
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct(ProductCreationDto productCreationDto)
         {
@@ -94,7 +90,13 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                 _unitOfWork.GetRepository<Product>().Create(newProduct);
                 await _unitOfWork.SaveShangesAsync();
 
-                return Ok(newProduct);
+                var createdStripeProduct = await _stripeService.CreateStripeProductAsync(productCreationDto);
+
+                return Ok(new 
+                    {
+                        Product = newProduct, 
+                        StripeProduct = new { ProductId = createdStripeProduct.ProductId, PriceId = createdStripeProduct.PriceId }
+                    });
             }
             else
             {
@@ -153,6 +155,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             {
                 _unitOfWork.GetRepository<Product>().Delete(deletedProduct);
                 await _unitOfWork.SaveShangesAsync();
+                //await _stripeService.DeleteStripeProductAsync(deletedProduct.Id);
                 return Ok($"{deletedProduct} has been deleted");
             }
         }
