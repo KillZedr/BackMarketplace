@@ -1,5 +1,6 @@
 
 using Payment.BLL;
+using Payment.BLL.PayPalSetting;
 using Serilog;
 
 namespace Paymant_Module_NEOXONLINE
@@ -19,6 +20,8 @@ namespace Paymant_Module_NEOXONLINE
             });
             builder.Services.AddHttpClient();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.Configure<PayPalSettings>(builder.Configuration.GetSection("PayPal"));
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
