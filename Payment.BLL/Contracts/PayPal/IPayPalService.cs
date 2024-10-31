@@ -15,7 +15,6 @@ namespace Payment.BLL.Contracts.PayPal
 
         Task<bool> CancelPayment(string paymentId);
 
-
-        PayPalPayment GetPayment(string paymentId);
+        Task<PayPalPayment> GetPaymentAsync(string paymentId);
     }
 }
