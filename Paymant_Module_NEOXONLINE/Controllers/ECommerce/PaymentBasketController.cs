@@ -100,7 +100,35 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             }
         }
 
+        [HttpPut("UpdatePrice")]
+        public async Task<IActionResult> UpdatePricePaymentBasket([FromQuery] int idPaymentBasket)
+        {
+            var findPaymentBasket = await _unitOfWork.GetRepository<PaymentBasket>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(pb => pb.Id == idPaymentBasket);
 
+            if (findPaymentBasket != null)
+            {
+                var repoBasket = _unitOfWork.GetRepository<Basket>();
+                var findBasket = await _unitOfWork.GetRepository<Basket>()
+                    .AsQueryable()
+                    .Include(b => b.ProductInBasket)
+                    .ThenInclude(pib => pib.Product)
+                    .FirstOrDefaultAsync(b => b.Id == findPaymentBasket.BasketId);
+                var findBasketProduct = findBasket.ProductInBasket.ToList();
+                decimal totalPrice = (decimal)findBasketProduct.Sum(pib => pib.Product.Price);
+                findPaymentBasket.Amount = totalPrice;
+
+                var repoPayment = _unitOfWork.GetRepository<PaymentBasket>();
+                repoPayment.Update(findPaymentBasket);
+                await _unitOfWork.SaveShangesAsync();
+                return Ok(findPaymentBasket);
+            }
+            else
+            {
+                return BadRequest(new {message = $"Invalid source data.  Not Found  Payment Basket with {idPaymentBasket} id" });
+            }
+        }
 
         [HttpDelete("Payment")]
 

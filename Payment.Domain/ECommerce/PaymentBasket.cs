@@ -14,5 +14,6 @@ namespace Payment.Domain.ECommerce
         public required decimal Amount { get; set; }
         public required string Source { get; set; }
         public required string MetaData { get; set; }
+
     }
 }

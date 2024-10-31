@@ -11,9 +11,9 @@ namespace Payment.BLL.Contracts.PayPal
 {
     public interface IPayPalService : IService
     {
-        Task<PayPalPayment> CreatePayment(PaymentBasket basket);
+        Task<PayPalPayment> CreatePaymentAsync(PaymentBasket basket);
 
-        Task<bool> CancelPayment(string paymentId);
+        Task<bool> CancelPaymentAsync(string paymentId);
 
         Task<PayPalPayment> GetPaymentAsync(string paymentId);
     }

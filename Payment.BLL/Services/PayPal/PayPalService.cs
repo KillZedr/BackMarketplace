@@ -35,7 +35,7 @@ namespace Payment.BLL.Services.PayPal
         }
 
 
-        public async Task<bool> CancelPayment(string paymentId)
+        public async Task<bool> CancelPaymentAsync(string paymentId)
         {
             try
             {
@@ -43,6 +43,8 @@ namespace Payment.BLL.Services.PayPal
 
                 if (payment != null && payment.state == "created")
                 {
+
+                    //записывать в бд
                     return await Task.FromResult(true);
                 }
                 return await Task.FromResult(false);
@@ -55,7 +57,7 @@ namespace Payment.BLL.Services.PayPal
         }
     
 
-    public async Task<PayPalPayment> CreatePayment(PaymentBasket basket)
+    public async Task<PayPalPayment> CreatePaymentAsync(PaymentBasket basket)
     {
         try
         {
