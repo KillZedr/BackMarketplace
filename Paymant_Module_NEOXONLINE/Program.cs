@@ -18,6 +18,15 @@ namespace Paymant_Module_NEOXONLINE
             {
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
             });
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllOrigins", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyMethod();
+                });
+            });
             builder.Services.AddHttpClient();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.Configure<PayPalSettings>(builder.Configuration.GetSection("PayPal"));
@@ -40,8 +49,14 @@ namespace Paymant_Module_NEOXONLINE
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors("AllowAllOrigins"); // Включаем CORS
+            app.UseRouting();
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
 
 
             app.MapControllers();

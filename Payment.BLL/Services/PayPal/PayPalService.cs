@@ -55,17 +55,17 @@ namespace Payment.BLL.Services.PayPal
                 return false;
             }
         }
-    
 
-    public async Task<PayPalPayment> CreatePaymentAsync(PaymentBasket basket)
-    {
-        try
+
+        public async Task<PayPalPayment> CreatePaymentAsync(PaymentBasket basket)
         {
-            var payment = new PayPalPayment
+            try
             {
-                intent = "sale",
-                payer = new Payer { payment_method = "paypal" },
-                transactions = new List<Transaction>
+                var payment = new PayPalPayment
+                {
+                    intent = "sale",
+                    payer = new Payer { payment_method = "paypal" },
+                    transactions = new List<Transaction>
                     {
                         new Transaction
                         {
@@ -77,33 +77,62 @@ namespace Payment.BLL.Services.PayPal
                             }
                         }
                     },
-                redirect_urls = new RedirectUrls
-                {
-                    cancel_url = "https://localhost:7257", //  заменить на свой 
-                    return_url = "https://localhost:7257"  // заменить на свой
-                }
-            };
-            var createdPayment = payment.Create(_apiContext);
-            return await Task.FromResult(createdPayment);
+                    redirect_urls = new RedirectUrls
+                    {
+                        cancel_url = "https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-07J31612JN5610411", //  заменить на свой 
+                        return_url = "https://localhost:7257"  // заменить на свой
+                    }
+                };
+                var createdPayment = payment.Create(_apiContext);
+                return await Task.FromResult(createdPayment);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating payment");
+                return null;
+            }
         }
-        catch (Exception ex)
+        public async Task<string> CreatePaymentAndGetApprovalUrlAsync(PaymentBasket basket)
         {
-            _logger.LogError(ex, "Error creating payment");
-            return null;
+            var payment = await CreatePaymentAsync(basket);  // Создаем платеж
+            if (payment != null)
+            {
+                var approvalUrl = payment.links.FirstOrDefault(link => link.rel.Equals("approval_url", StringComparison.OrdinalIgnoreCase))?.href;
+                return approvalUrl;  // Возвращаем URL для перенаправления пользователя
+            }
+            return null;  // В случае ошибки возвращаем null
         }
-    }
 
-    public async Task<PayPalPayment> GetPaymentAsync(string paymentId)
-    {
-        try
+        public async Task<PayPalPayment> ExecutePaymentAsync(string paymentId, string payerId)
         {
-            return await Task.FromResult(PayPalPayment.Get(_apiContext, paymentId));
+            var paymentExecution = new PaymentExecution() { payer_id = payerId };
+            var payment = new PayPalPayment() { id = paymentId };
+
+            try
+            {
+                var executedPayment =  payment.Execute(_apiContext, paymentExecution);
+                _logger.LogInformation($"Payment executed successfully: {executedPayment.id}");
+                return executedPayment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error executing payment: {ex.Message}");
+                return null;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving payment");
-            return null;
+
+
+        public async Task<PayPalPayment> GetPaymentAsync(string paymentId)
+            {
+                try
+                {
+                    return await Task.FromResult(PayPalPayment.Get(_apiContext, paymentId));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error retrieving payment");
+                    return null;
+                }
+            }
         }
     }
-}
-}

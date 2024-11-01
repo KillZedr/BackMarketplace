@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.PayPal;
 using Payment.Domain.ECommerce;
@@ -47,6 +48,35 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
                 return Ok(payment);
             }
         }
+
+        [HttpPost("createAprovalUrl")]
+
+        public async Task<IActionResult> CreateApruvalUrl([FromQuery] int idPaymentBasket)
+        {
+            var findPaymentBasket = await _unitOfWork.GetRepository<PaymentBasket>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(pb => pb.Id == idPaymentBasket);
+            var approvalUrl = await _payPalService.CreatePaymentAndGetApprovalUrlAsync(findPaymentBasket);
+
+            if (approvalUrl != null)
+            {
+                return Redirect(approvalUrl);
+            }
+            return BadRequest(new { message = "Failed to create payment" });
+        }
+
+
+        [HttpPost("execute")]
+        public async Task<IActionResult> ExecutePayment(string paymentId, string payerId)
+        {
+            var executedPayment = await _payPalService.ExecutePaymentAsync(paymentId, payerId);
+            if (executedPayment != null && executedPayment.state == "approved")
+            {
+                return Ok(new { message = "Payment completed successfully", paymentId = executedPayment.id });
+            }
+            return BadRequest(new { message = "Payment execution failed" });
+        }
+
 
 
         [HttpPost("Cancel")]
