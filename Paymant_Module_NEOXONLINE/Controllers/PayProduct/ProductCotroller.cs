@@ -19,13 +19,11 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IProductService _productService;
-        private readonly IStripeService _stripeService;
 
-        public ProductCotroller(IUnitOfWork unitOfWork, IProductService productService, IStripeService stripeService)
+        public ProductCotroller(IUnitOfWork unitOfWork, IProductService productService)
         {
             _unitOfWork = unitOfWork;
             _productService = productService;
-            _stripeService = stripeService;
         }
 
         [HttpGet("GetAllProducts")]
@@ -90,13 +88,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                 _unitOfWork.GetRepository<Product>().Create(newProduct);
                 await _unitOfWork.SaveShangesAsync();
 
-                var createdStripeProduct = await _stripeService.CreateStripeProductAsync(productCreationDto);
-
-                return Ok(new 
-                    {
-                        Product = newProduct, 
-                        StripeProduct = new { ProductId = createdStripeProduct.ProductId, PriceId = createdStripeProduct.PriceId }
-                    });
+                return Ok(newProduct);
             }
             else
             {

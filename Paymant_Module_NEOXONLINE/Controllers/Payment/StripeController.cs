@@ -4,6 +4,7 @@ using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
 using Payment.Domain.ECommerce;
 using Stripe;
+using Stripe.Checkout;
 using Stripe.V2;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.Payment
@@ -59,8 +60,36 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         public async Task<IActionResult> CreateProduct(ProductCreationDto productDto)
         {
             try
-            {            
-                return Ok(await _stripeService.CreateStripeProductAsync(productDto));
+            {
+                var productId = await _stripeService.CreateStripeProductAsync(productDto);
+                var priceId = await _stripeService.CreateStripePriceAsync(productId, productDto.Price);
+                return Ok(new {ProductId = productId, PriceId = priceId});
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("CreateCheckoutSession")]
+        public async Task<IActionResult> CreateCheckoutSession(List<string> prices)
+        {
+            try
+            {
+                return Ok(await _stripeService.CreateCheckoutSessionAsync(prices));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("CreateStripeCustomer")]
+        public async Task<IActionResult> CreateStripeCustomer(UserDto userDto)
+        {
+            try
+            {
+                return Ok(_stripeService.CreateStripeCustomer(userDto));
             }
             catch (Exception ex)
             {
@@ -69,11 +98,11 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         }
 
         [HttpPut("UpdateProduct")]
-        public async Task<IActionResult> UpdateProduct(ProductCreationDto productDto)
+        public async Task<IActionResult> UpdateProduct(string id, ProductCreationDto productDto)
         {
             try
             {
-               return Ok(await _stripeService.UpdateStripeProductAsync(productDto));
+               return Ok(await _stripeService.UpdateStripeProductAsync(id, productDto));
             }
             catch (Exception ex)
             {
@@ -106,5 +135,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return StatusCode(500, ex.Message);
             }
         }
+
+
     }
 }
