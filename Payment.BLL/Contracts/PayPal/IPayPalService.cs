@@ -1,4 +1,5 @@
-﻿using Payment.Domain.ECommerce;
+﻿using Payment.BLL.Services.PayPal.EntityRefould;
+using Payment.Domain.ECommerce;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,8 @@ namespace Payment.BLL.Contracts.PayPal
         Task<PayPalPayment> GetPaymentAsync(string paymentId);
         Task<string> CreatePaymentAndGetApprovalUrlAsync(PaymentBasket basket);
         Task<PayPalPayment> ExecutePaymentAsync(string paymentId, string payerId);
+
+        Task<RefundResult> RefundPaymentAsync(string paymentId);
 
 
     }

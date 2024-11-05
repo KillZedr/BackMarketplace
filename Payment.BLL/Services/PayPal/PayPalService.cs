@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.PayPal;
 using Payment.BLL.PayPalSetting;
+using Payment.BLL.Services.PayPal.EntityRefould;
 using Payment.Domain.ECommerce;
+using Payment.Domain.PayPal;
+using PayPal;
 using PayPal.Api;
 using System;
 using System.Collections.Generic;
@@ -21,8 +25,9 @@ namespace Payment.BLL.Services.PayPal
 
         private readonly ILogger<PayPalService> _logger;
         private readonly IPayPalCommissionService _commissionService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PayPalService(IOptions<PayPalSettings> payPalSettings, ILogger<PayPalService> logger, IPayPalCommissionService commissionService)
+        public PayPalService(IOptions<PayPalSettings> payPalSettings, ILogger<PayPalService> logger, IPayPalCommissionService commissionService, IUnitOfWork unitOfWork)
         {
             _payPalSetting = payPalSettings.Value;
             _logger = logger; // Инициализация логгера Microsoft.Extensions.Logging;
@@ -34,6 +39,7 @@ namespace Payment.BLL.Services.PayPal
                 Config = new Dictionary<string, string> { { "mode", _payPalSetting.Mode } }
             };
             _commissionService = commissionService;
+            _unitOfWork = unitOfWork;
         }
 
 
@@ -55,6 +61,52 @@ namespace Payment.BLL.Services.PayPal
             {
                 _logger.LogError(ex, "Error cancelling payment");
                 return false;
+            }
+        }
+
+        public async Task<RefundResult> RefundPaymentAsync(string paymentId)
+        {
+            try
+            {
+                var findTransaktion = _unitOfWork.GetRepository<PayPalPaymentTransaction>()
+                    .AsQueryable()
+                    .FirstOrDefault(ppt => ppt.PaymentId == paymentId);
+                // Получение транзакции по ID
+                var sale = new Sale { id = paymentId };
+
+                // Подготовка запроса на возврат средств
+                var refundRequest = new RefundRequest
+                {
+                    amount = new Amount
+                    {
+                        total = findTransaktion.Amount.ToString(), // Укажите сумму для возврата
+                        currency = findTransaktion.Currency // Укажите валюту
+                    }
+                };
+
+                // Выполнение возврата
+                var response = sale.Refund(_apiContext, refundRequest);
+
+                _logger.LogInformation($"Refund successful for payment ID: {paymentId}");
+
+                // Возвращаем результат возврата
+                return new RefundResult
+                {
+                    IsSuccess = true,
+                    RefundTransactionId = response.id,
+                    RefundAmount = response.amount.total,
+                    Currency = response.amount.currency
+                };
+            }
+            catch (PayPalException ex)
+            {
+                _logger.LogError(ex, $"PayPalException occurred while refunding payment ID: {paymentId}");
+                return new RefundResult { IsSuccess = false };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Exception occurred while refunding payment ID: {paymentId}");
+                return new RefundResult { IsSuccess = false };
             }
         }
 

@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.PayPal;
 using Payment.Domain.ECommerce;
+using Payment.Domain.PayPal;
+using PayPal.Api;
+using System.Globalization;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
 {
@@ -22,6 +25,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
             _unitOfWork = unitOfWork;
         }
 
+
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllTransactions ()
+        {
+            var repoTransactions = await _unitOfWork.GetRepository<PayPalPaymentTransaction>().AsReadOnlyQueryable().ToListAsync();
+            return Ok(repoTransactions);
+        }
 
         [HttpPost("Create")]
         public async Task<IActionResult> CreatePaymentAsync([FromForm] int findPaymentBasket)
@@ -80,6 +91,22 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
             if (result != null && result.state == "approved")
             {
                 _logger.LogInformation($"Payment executed successfully: {result.id}");
+
+                var transaction = new PayPalPaymentTransaction
+                {
+                    PaymentId = result.id,
+                    PayerId = PayerID,
+                    SaleId = result.transactions[0].related_resources[0].sale.id,
+                    Status = result.state,
+                    Amount = decimal.Parse(result.transactions[0].amount.total, CultureInfo.InvariantCulture),
+                    Currency = result.transactions[0].amount.currency,
+                    Description = "Payment description"
+                };
+
+                var repoPayPalTransaction = _unitOfWork.GetRepository<PayPalPaymentTransaction>();
+                repoPayPalTransaction.Create(transaction);
+                await _unitOfWork.SaveShangesAsync();
+
                 return Ok(new { message = "Payment executed successfully", paymentId = result.id });
             }
             else
@@ -88,6 +115,64 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
                 return StatusCode(500, "Error executing payment");
             }
         }
+
+
+        [HttpPost("Refund")]
+        public async Task<IActionResult> RefundPayment([FromQuery] string paymentId)
+        {
+            if (string.IsNullOrWhiteSpace(paymentId))
+            {
+                return BadRequest(new { message = "Payment ID is required" });
+            }
+
+            var findTransaction = await _unitOfWork.GetRepository<PayPalPaymentTransaction>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(ppt => ppt.PaymentId == paymentId);
+
+            try
+            {
+                // Выполняем возврат средств через сервис
+                var refundResult = await _payPalService.RefundPaymentAsync(paymentId);
+
+                if (!refundResult.IsSuccess)
+                {
+                    _logger.LogError($"Failed to refund payment with ID: {paymentId}", paymentId);
+                    return StatusCode(500, new { message = "Failed to refund payment" });
+                }
+
+                // Сохраняем информацию о возврате в базе данных
+
+                findTransaction.Status = "Refunded";
+                findTransaction.RefundedDate = DateTime.UtcNow;
+                findTransaction.Description = "Refund processed";
+                findTransaction.RefundId = refundResult.RefundTransactionId;
+
+                /*var refundTransaction = new PayPalPaymentTransaction
+                {
+                    PaymentId = paymentId,
+                    Status = "Refunded",
+                    RefundId = refundResult.RefundTransactionId,
+                    Amount = refundResult.RefundAmount,
+                    Currency = refundResult.Currency,
+                    Description = "Refund processed",
+                    RefundedDate = DateTime.UtcNow
+                };*/
+
+                var repoPayPalTransaction = _unitOfWork.GetRepository<PayPalPaymentTransaction>();
+                repoPayPalTransaction.Update(findTransaction);
+                await _unitOfWork.SaveShangesAsync();
+
+                return Ok(new { message = "Payment refunded successfully", refundTransactionId = refundResult.RefundTransactionId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"An error occurred while processing refund for payment ID: {paymentId}");
+                return StatusCode(500, new { message = "An error occurred while processing refund" });
+            }
+        }
+
+
+
 
 
 
