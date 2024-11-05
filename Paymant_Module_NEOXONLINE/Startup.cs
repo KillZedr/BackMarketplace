@@ -20,6 +20,7 @@ namespace Paymant_Module_NEOXONLINE
 
         internal static void AddServices(WebApplicationBuilder builder)
         {
+            
             AddSerilog(builder);
             RegisterDAL(builder.Services);
 
@@ -44,7 +45,18 @@ namespace Paymant_Module_NEOXONLINE
                 });
         }
 
-
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if(env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
+        }
 
         public static void RegisterDAL(IServiceCollection services)
         {

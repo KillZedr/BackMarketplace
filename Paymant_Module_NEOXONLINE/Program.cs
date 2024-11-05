@@ -48,7 +48,10 @@ namespace Paymant_Module_NEOXONLINE
                 app.UseSwaggerUI();
             }
 
+
+
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseCors("AllowAllOrigins"); // Включаем CORS
             app.UseRouting();
             app.UseAuthorization();
@@ -56,8 +59,8 @@ namespace Paymant_Module_NEOXONLINE
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToFile("htmlpage.html"); // Загружает index.html для корневого URL
             });
-
 
             app.MapControllers();
 

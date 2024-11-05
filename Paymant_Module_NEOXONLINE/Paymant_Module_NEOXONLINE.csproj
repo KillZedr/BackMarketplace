@@ -29,4 +29,8 @@
     <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\Pages\htmlpage.html" />
+  </ItemGroup>
+
 </Project>

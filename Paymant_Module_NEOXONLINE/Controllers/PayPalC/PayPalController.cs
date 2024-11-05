@@ -58,23 +58,35 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
                 .FirstOrDefaultAsync(pb => pb.Id == idPaymentBasket);
             var approvalUrl = await _payPalService.CreatePaymentAndGetApprovalUrlAsync(findPaymentBasket);
 
-            if (approvalUrl != null)
+            if (!string.IsNullOrEmpty(approvalUrl))
             {
-                return Redirect(approvalUrl);
+                return Ok( new { approvalUrl } );
             }
             return BadRequest(new { message = "Failed to create payment" });
         }
 
 
-        [HttpPost("execute")]
-        public async Task<IActionResult> ExecutePayment(string paymentId, string payerId)
+        [HttpGet("execute-payment")]
+        public async Task<IActionResult> ExecutePayment(string paymentId, string PayerID)
         {
-            var executedPayment = await _payPalService.ExecutePaymentAsync(paymentId, payerId);
-            if (executedPayment != null && executedPayment.state == "approved")
+            if (string.IsNullOrEmpty(paymentId) || string.IsNullOrEmpty(PayerID))
             {
-                return Ok(new { message = "Payment completed successfully", paymentId = executedPayment.id });
+                _logger.LogError("Invalid paymentId or PayerID");
+                return BadRequest("Invalid paymentId or PayerID");
             }
-            return BadRequest(new { message = "Payment execution failed" });
+
+            var result = await _payPalService.ExecutePaymentAsync(paymentId, PayerID);
+
+            if (result != null && result.state == "approved")
+            {
+                _logger.LogInformation($"Payment executed successfully: {result.id}");
+                return Ok(new { message = "Payment executed successfully", paymentId = result.id });
+            }
+            else
+            {
+                _logger.LogError("Error executing payment");
+                return StatusCode(500, "Error executing payment");
+            }
         }
 
 

@@ -20,8 +20,9 @@ namespace Payment.BLL.Services.PayPal
         private readonly APIContext _apiContext;
 
         private readonly ILogger<PayPalService> _logger;
+        private readonly IPayPalCommissionService _commissionService;
 
-        public PayPalService(IOptions<PayPalSettings> payPalSettings, ILogger<PayPalService> logger)
+        public PayPalService(IOptions<PayPalSettings> payPalSettings, ILogger<PayPalService> logger, IPayPalCommissionService commissionService)
         {
             _payPalSetting = payPalSettings.Value;
             _logger = logger; // Инициализация логгера Microsoft.Extensions.Logging;
@@ -32,6 +33,7 @@ namespace Payment.BLL.Services.PayPal
             {
                 Config = new Dictionary<string, string> { { "mode", _payPalSetting.Mode } }
             };
+            _commissionService = commissionService;
         }
 
 
@@ -79,8 +81,8 @@ namespace Payment.BLL.Services.PayPal
                     },
                     redirect_urls = new RedirectUrls
                     {
-                        cancel_url = "https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-07J31612JN5610411", //  заменить на свой 
-                        return_url = "https://localhost:7257"  // заменить на свой
+                        cancel_url = "https://localhost:7257/api/paypal/cancel",
+                        return_url = "https://localhost:7257/api/paypal/execute-payment"
                     }
                 };
                 var createdPayment = payment.Create(_apiContext);
@@ -94,13 +96,44 @@ namespace Payment.BLL.Services.PayPal
         }
         public async Task<string> CreatePaymentAndGetApprovalUrlAsync(PaymentBasket basket)
         {
-            var payment = await CreatePaymentAsync(basket);  // Создаем платеж
-            if (payment != null)
+
+
+            decimal commission = _commissionService.CalculateCommission(basket.Amount, "EUR");
+            decimal totalAmount = basket.Amount + commission;
+            var payment = new PayPalPayment
             {
-                var approvalUrl = payment.links.FirstOrDefault(link => link.rel.Equals("approval_url", StringComparison.OrdinalIgnoreCase))?.href;
-                return approvalUrl;  // Возвращаем URL для перенаправления пользователя
+                intent = "sale",
+                payer = new Payer { payment_method = "paypal" },
+                transactions = new List<Transaction>
+            {
+                new Transaction
+                {
+                    description = basket.MetaData,
+                    amount = new Amount
+                    {
+                        currency = "EUR",
+                        total = totalAmount.ToString("F2")
+                    }
+                }
+            },
+                redirect_urls = new RedirectUrls
+                {
+                    cancel_url = "https://localhost:7257/api/paypal/cancel",
+                    return_url = "https://localhost:7257/api/paypal/execute-payment"
+                }
+            };
+
+            try
+            {
+                var createdPayment = payment.Create(_apiContext);
+                var approvalUrl = createdPayment.links.FirstOrDefault(link => link.rel.Equals("approval_url", StringComparison.OrdinalIgnoreCase))?.href;
+                return approvalUrl;
             }
-            return null;  // В случае ошибки возвращаем null
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating payment");
+                return null;
+            }
         }
 
         public async Task<PayPalPayment> ExecutePaymentAsync(string paymentId, string payerId)
@@ -110,13 +143,13 @@ namespace Payment.BLL.Services.PayPal
 
             try
             {
-                var executedPayment =  payment.Execute(_apiContext, paymentExecution);
+                var executedPayment = payment.Execute(_apiContext, paymentExecution);
                 _logger.LogInformation($"Payment executed successfully: {executedPayment.id}");
                 return executedPayment;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error executing payment: {ex.Message}");
+                _logger.LogError(ex, $"Error executing payment");
                 return null;
             }
         }
