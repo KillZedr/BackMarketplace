@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
 using Payment.Domain.ECommerce;
@@ -14,10 +15,13 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
     public class StripeController : ControllerBase
     {
         private readonly IStripeService _stripeService;
+        private readonly string _webhookSecret;
 
-        public StripeController(IStripeService stripeService)
+
+        public StripeController(IStripeService stripeService, IConfiguration configuration)
         {
             _stripeService = stripeService;
+            _webhookSecret = configuration["Stripe:WebhookSecret"];
         }
 
         [HttpGet("GetAllStripeProducts")]
@@ -85,7 +89,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         }
 
         [HttpPost("CreateStripeCustomer")]
-        public async Task<IActionResult> CreateStripeCustomer(UserDto userDto)
+        public async Task<IActionResult> CreateStripeCustomer1(UserDto userDto)
         {
             try
             {
@@ -109,6 +113,20 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPatch("ActivateProduct")]
+        public async Task<IActionResult> ActivateProduct(string id)
+        {
+            try
+            {
+                return Ok(await _stripeService.ActivateStripeProductAsync(id));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        
 
         [HttpDelete("ArchiveProduct")]
         public async Task<IActionResult> ArchiveProduct(string productId)
@@ -136,6 +154,58 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        [HttpPost("StripeWebhook")]
+        public async Task<IActionResult> StripeWebhook()
+        {
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+
+            try
+            {
+                var stripeEvent = EventUtility.ConstructEvent(
+                    json,
+                    Request.Headers["Stripe-Signature"],
+                    _webhookSecret,
+                    300,
+                    false
+                );
+                if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted)
+                {
+                    var session = stripeEvent.Data.Object as Session;
+
+                    if(session.Status == "complete")
+                    {
+                        Console.WriteLine($"Checkout completed for session: {session.Id}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Checkout for session: {session.Id} complited with status {session.Status}");
+                    }
+                    
+                }
+                else if (stripeEvent.Type == EventTypes.CheckoutSessionAsyncPaymentSucceeded)
+                {
+                    var session = stripeEvent.Data.Object as Session;
+
+                    Console.WriteLine($"async checkout payment succeeded for session: {session.Id}");
+                }
+                else if (stripeEvent.Type == EventTypes.CheckoutSessionAsyncPaymentFailed)
+                {
+                    var session = stripeEvent.Data.Object as Session;
+
+                    Console.WriteLine($"async checkout payment failed for session: {session.Id}");
+                }
+                else
+                {
+                    Console.WriteLine("Unhandled event type: {0}", stripeEvent.Type);
+                }
+                return Ok();
+            }
+            catch (StripeException e)
+            {
+                Console.WriteLine($"error: {e.Message}");
+                return BadRequest();
+            }
+        }
 
     }
 }

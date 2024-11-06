@@ -5,6 +5,7 @@ using Payment.BLL.Services.PayProduct;
 using Payment.Domain.Identity;
 using Stripe;
 using Stripe.Checkout;
+using Stripe.Forwarding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -157,14 +158,13 @@ namespace Payment.BLL.Services.Payment
 
             var options = new SessionCreateOptions
             {
-                PaymentMethodTypes = new List<string> { "card" },
+                PaymentMethodTypes = new List<string> { "card", "paypal", "sepa_debit"},
                 LineItems = lineItems,
                 Mode = "payment",
                 SuccessUrl = "https://your-website.com/success?session_id={CHECKOUT_SESSION_ID}",
                 CancelUrl = "https://your-website.com/cancel",
             };
-            Session session = await _sessionService.CreateAsync(options);
-
+            Session session = await _sessionService.CreateAsync(options);            
             return session.Url;
         }
 

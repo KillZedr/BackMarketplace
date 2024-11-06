@@ -46,7 +46,9 @@ namespace Paymant_Module_NEOXONLINE
 
         public static void ConfigureStripe(WebApplicationBuilder builder)
         {
+
             StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
+
         }
 
         public static void RegisterDAL(IServiceCollection services)
