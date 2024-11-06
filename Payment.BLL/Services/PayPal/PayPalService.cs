@@ -68,24 +68,28 @@ namespace Payment.BLL.Services.PayPal
         {
             try
             {
-                var findTransaktion = _unitOfWork.GetRepository<PayPalPaymentTransaction>()
+                var findTransaction = _unitOfWork.GetRepository<PayPalPaymentTransaction>()
                     .AsQueryable()
                     .FirstOrDefault(ppt => ppt.PaymentId == paymentId);
-                // Получение транзакции по ID
-                var sale = new Sale { id = paymentId };
 
-                // Подготовка запроса на возврат средств
-                var refundRequest = new RefundRequest
+                if (findTransaction == null)
+                {
+                    _logger.LogError($"Transaction with payment ID {paymentId} not found.");
+                    return new RefundResult { IsSuccess = false };
+                }
+
+                // Получение транзакции по ID
+                var sale = new Sale { id = findTransaction.SaleId };
+
+                // Выполнение возврата
+                var response = sale.Refund(_apiContext, new Refund
                 {
                     amount = new Amount
                     {
-                        total = findTransaktion.Amount.ToString(), // Укажите сумму для возврата
-                        currency = findTransaktion.Currency // Укажите валюту
+                        total = findTransaction.Amount.ToString(),
+                        currency = findTransaction.Currency
                     }
-                };
-
-                // Выполнение возврата
-                var response = sale.Refund(_apiContext, refundRequest);
+                });
 
                 _logger.LogInformation($"Refund successful for payment ID: {paymentId}");
 
