@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Options;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.PayPal;
-using Payment.BLL.PayPalSetting;
 using Payment.BLL.Services.PayPal.EntityRefould;
+using Payment.BLL.Settings.PayPalSetting;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayPal;
 using PayPal;

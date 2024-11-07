@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Payment.BLL.PayPalSetting
+namespace Payment.BLL.Settings.PayPalSetting
 {
     public class PayPalSettings
     {

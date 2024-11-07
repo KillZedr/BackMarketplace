@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
+using Payment.BLL.Contracts.Notifications;
 using Payment.BLL.Contracts.PayPal;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayPal;
@@ -17,12 +18,13 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
         private readonly IPayPalService _payPalService;
         private readonly ILogger<PayPalController> _logger;
         private readonly IUnitOfWork _unitOfWork;
-
-        public PayPalController(IPayPalService payPalService, ILogger<PayPalController> logger, IUnitOfWork unitOfWork)
+        private readonly IEmailNotificationService _emailNotificationService;
+        public PayPalController(IPayPalService payPalService, ILogger<PayPalController> logger, IUnitOfWork unitOfWork, IEmailNotificationService emailNotificationService)
         {
             _payPalService = payPalService;
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _emailNotificationService = emailNotificationService;
         }
 
 
@@ -60,24 +62,41 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
             }
         }
 
-        [HttpPost("createAprovalUrl")]
-
-        public async Task<IActionResult> CreateApruvalUrl([FromQuery] int idPaymentBasket)
+        [HttpPost("createApprovalUrl")]
+        public async Task<IActionResult> CreateApprovalUrl([FromQuery] int idPaymentBasket, [FromQuery] string userEmail)
         {
+            // Проверяем, существует ли корзина с указанным id
             var findPaymentBasket = await _unitOfWork.GetRepository<PaymentBasket>()
                 .AsQueryable()
                 .FirstOrDefaultAsync(pb => pb.Id == idPaymentBasket);
+
+            if (findPaymentBasket == null)
+            {
+                return NotFound(new { message = "Payment basket not found" });
+            }
+
+            // Сохраняем email пользователя в корзине
+            findPaymentBasket.UserEmail = userEmail;
+            _unitOfWork.GetRepository<PaymentBasket>().Update(findPaymentBasket);
+            await _unitOfWork.SaveShangesAsync();
+
+            // Генерируем approvalUrl
             var approvalUrl = await _payPalService.CreatePaymentAndGetApprovalUrlAsync(findPaymentBasket);
 
             if (!string.IsNullOrEmpty(approvalUrl))
             {
-                return Ok( new { approvalUrl } );
+                // Отправляем уведомление о необходимости подтверждения платежа
+                await _emailNotificationService.SendSuccessNotificationAsync(userEmail, idPaymentBasket.ToString());
+
+                return Ok(new { approvalUrl });
             }
+
             return BadRequest(new { message = "Failed to create payment" });
         }
+    
 
 
-        [HttpGet("execute-payment")]
+    [HttpGet("execute-payment")]
         public async Task<IActionResult> ExecutePayment(string paymentId, string PayerID)
         {
             if (string.IsNullOrEmpty(paymentId) || string.IsNullOrEmpty(PayerID))
@@ -94,6 +113,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
 
                 var transaction = new PayPalPaymentTransaction
                 {
+                    
                     PaymentId = result.id,
                     PayerId = PayerID,
                     SaleId = result.transactions[0].related_resources[0].sale.id,
@@ -106,6 +126,8 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
                 var repoPayPalTransaction = _unitOfWork.GetRepository<PayPalPaymentTransaction>();
                 repoPayPalTransaction.Create(transaction);
                 await _unitOfWork.SaveShangesAsync();
+                
+                /*await _emailNotificationService.SendSuccessNotificationAsync(userEmail, paymentId);*/
 
                 return Ok(new { message = "Payment executed successfully", paymentId = result.id });
             }

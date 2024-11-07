@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Payment.Application;
@@ -11,9 +12,11 @@ using Payment.Application;
 namespace Payment.Application.Migrations
 {
     [DbContext(typeof(Payment_DbContext))]
-    partial class Payment_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20241107092452_AddFieldInPaymentBasketUserEmail")]
+    partial class AddFieldInPaymentBasketUserEmail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,9 +71,6 @@ namespace Payment.Application.Migrations
 
                     b.Property<string>("Source")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserEmail")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
