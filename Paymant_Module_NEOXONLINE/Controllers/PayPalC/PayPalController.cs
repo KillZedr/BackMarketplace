@@ -81,9 +81,6 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
             _unitOfWork.GetRepository<PaymentBasket>().Update(findPaymentBasket);
             await _unitOfWork.SaveShangesAsync();
 
-
-            var customData = new { userEmail };
-            var customJson = JsonConvert.SerializeObject(customData);
             // Генерируем approvalUrl
             var approvalUrl = await _payPalService.CreatePaymentAndGetApprovalUrlAsync(findPaymentBasket);
 
