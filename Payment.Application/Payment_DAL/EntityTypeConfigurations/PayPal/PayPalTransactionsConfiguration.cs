@@ -15,6 +15,8 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.PayPal
         {
             builder.HasKey(t => t.Id);
 
+            builder.Property(p => p.PaymentBasketId);
+
             builder.Property(t => t.PaymentId)
                 .IsRequired()
                 .HasMaxLength(50);

@@ -15,6 +15,7 @@ namespace Payment.Domain.PayPal
     {
         
         public int Id { get; set; }
+        public  int PaymentBasketId { get; set; }
         public required string PaymentId { get; set; } // ID платежа в PayPal
 
         public required string PayerId { get; set; } // ID плательщика

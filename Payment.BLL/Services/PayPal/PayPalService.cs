@@ -156,6 +156,8 @@ namespace Payment.BLL.Services.PayPal
 
             decimal commission = _commissionService.CalculateCommission(basket.Amount, "EUR");
             decimal totalAmount = basket.Amount + commission;
+
+            
             var payment = new PayPalPayment
             {
                 intent = "sale",
@@ -169,7 +171,8 @@ namespace Payment.BLL.Services.PayPal
                     {
                         currency = "EUR",
                         total = totalAmount.ToString("F2")
-                    }
+                    },
+                    custom = basket.Id.ToString() // Передаем idPaymentBasket как custom data
                 }
             },
                 redirect_urls = new RedirectUrls

@@ -31,11 +31,27 @@ namespace Payment.BLL.Services.Notifications
         }
 
 
-        public async Task SendSuccessNotificationAsync(string toEmail, string paymentId)
+        public async Task SendTestSuccessNotificationAsync(string toEmail, DateTime creationDate, string approvalUrl)
         {
-            string subject = "Payment Successful";
-            string body = $"Your payment with ID {paymentId} was successful.";
-            await SendEmailAsync(toEmail, subject, body);
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.FromEmail, _smtpSettings.SenderName),
+                Subject = "Please Confirm Your Payment",
+
+                Body = $@"
+            <h3>Your Payment is Pending Confirmation</h3>
+            <p>Thank you for initiating your payment.</p>
+            <p><strong>Payment Details:</strong></p>
+            <ul>
+                <li><strong>Date and Time:</strong> {creationDate.ToString("f")}</li>
+            </ul>
+            <p>Please confirm your payment by clicking the following link:</p>
+            <p><a href='{approvalUrl}'>Confirm Payment</a></p>
+            <p>If you did not initiate this payment, please disregard this email.</p>",
+                IsBodyHtml = true,
+            };
+            mailMessage.To.Add(toEmail);
+            await _smtpClient.SendMailAsync(mailMessage);
         }
 
         public async Task SendErrorNotificationAsync(string toEmail, string paymentId, string errorMessage)
@@ -51,6 +67,39 @@ namespace Payment.BLL.Services.Notifications
             string body = $"Your payment with ID {paymentId} failed due to insufficient funds.";
             await SendEmailAsync(toEmail, subject, body);
         }
+
+
+        public async Task SendSuccessNotificationAsync(string email, decimal amount, string currency, DateTime paymentTime)
+        {
+            try
+            {
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(_smtpSettings.FromEmail, _smtpSettings.SenderName),
+                    Subject = "Payment Successful",
+                    Body = $@"
+                <h3>Thank you for your payment!</h3>
+                <p>Your payment has been successfully processed.</p>
+                <p><strong>Payment Details:</strong></p>
+                <ul>
+                    <li><strong>Amount:</strong> {amount} {currency}</li>
+                    <li><strong>Date and Time:</strong> {paymentTime.ToString("f")}</li>
+                </ul>",
+                    IsBodyHtml = true,
+                };
+                mailMessage.To.Add(email);
+
+                await _smtpClient.SendMailAsync(mailMessage);  // Используем _smtpClient, созданный в конструкторе
+                _logger.LogInformation($"Email sent to {email}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to send email to {email}");
+                throw;
+            }
+        }
+
+
 
         private async Task SendEmailAsync(string toEmail, string subject, string body)
         {

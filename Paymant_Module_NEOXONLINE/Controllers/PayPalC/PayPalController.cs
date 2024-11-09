@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.Notifications;
 using Payment.BLL.Contracts.PayPal;
@@ -80,13 +81,16 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
             _unitOfWork.GetRepository<PaymentBasket>().Update(findPaymentBasket);
             await _unitOfWork.SaveShangesAsync();
 
+
+            var customData = new { userEmail };
+            var customJson = JsonConvert.SerializeObject(customData);
             // Генерируем approvalUrl
             var approvalUrl = await _payPalService.CreatePaymentAndGetApprovalUrlAsync(findPaymentBasket);
 
             if (!string.IsNullOrEmpty(approvalUrl))
             {
                 // Отправляем уведомление о необходимости подтверждения платежа
-                await _emailNotificationService.SendSuccessNotificationAsync(userEmail, idPaymentBasket.ToString());
+                await _emailNotificationService.SendTestSuccessNotificationAsync(userEmail, DateTime.UtcNow, approvalUrl );
 
                 return Ok(new { approvalUrl });
             }
@@ -107,9 +111,12 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
 
             var result = await _payPalService.ExecutePaymentAsync(paymentId, PayerID);
 
+           
             if (result != null && result.state == "approved")
             {
                 _logger.LogInformation($"Payment executed successfully: {result.id}");
+
+                int idPaymentBasket = int.Parse(result.transactions[0].custom);
 
                 var transaction = new PayPalPaymentTransaction
                 {
@@ -120,14 +127,19 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
                     Status = result.state,
                     Amount = decimal.Parse(result.transactions[0].amount.total, CultureInfo.InvariantCulture),
                     Currency = result.transactions[0].amount.currency,
-                    Description = "Payment description"
+                    Description = $"Payment approved {result.payer.payer_info.email}",
+                    PaymentBasketId = idPaymentBasket
                 };
 
                 var repoPayPalTransaction = _unitOfWork.GetRepository<PayPalPaymentTransaction>();
                 repoPayPalTransaction.Create(transaction);
                 await _unitOfWork.SaveShangesAsync();
+
+                var repoPaymentBasket = await _unitOfWork.GetRepository<PaymentBasket>()
+                   .AsQueryable()
+                   .FirstOrDefaultAsync(pb => pb.Id == transaction.PaymentBasketId);
                 
-                /*await _emailNotificationService.SendSuccessNotificationAsync(userEmail, paymentId);*/
+                await _emailNotificationService.SendSuccessNotificationAsync(repoPaymentBasket.UserEmail, transaction.Amount, transaction.Currency, transaction.CreatedDate);
 
                 return Ok(new { message = "Payment executed successfully", paymentId = result.id });
             }

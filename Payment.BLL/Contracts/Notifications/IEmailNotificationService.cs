@@ -8,12 +8,12 @@ namespace Payment.BLL.Contracts.Notifications
 {
     public interface IEmailNotificationService : IService
     {
-        Task SendSuccessNotificationAsync(string toEmail, string paymentId);
+        Task SendTestSuccessNotificationAsync(string toEmail, DateTime creationDate, string approvalUrl);
 
         Task SendErrorNotificationAsync(string toEmail, string paymentId, string errorMessage);
 
         Task SendInsufficientFundsNotificationAsync(string toEmail, string paymentId);
 
-        /*Task SendEmailAsync(string toEmail, string subject, string body);*/
+        Task SendSuccessNotificationAsync(string email, decimal amount, string currency, DateTime paymentTime);
     }
 }
