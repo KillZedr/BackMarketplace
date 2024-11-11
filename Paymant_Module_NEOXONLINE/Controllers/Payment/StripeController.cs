@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
+using Payment.Domain;
 using Payment.Domain.ECommerce;
+using Payment.Domain.PayProduct;
 using Stripe;
 using Stripe.Checkout;
 using Stripe.V2;
@@ -16,12 +20,13 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
     {
         private readonly IStripeService _stripeService;
         private readonly string _webhookSecret;
+        private readonly IUnitOfWork _unitOfWork;
 
-
-        public StripeController(IStripeService stripeService, IConfiguration configuration)
+        public StripeController(IStripeService stripeService, IConfiguration configuration, IUnitOfWork unitOfWork)
         {
             _stripeService = stripeService;
             _webhookSecret = configuration["Stripe:WebhookSecret"];
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet("GetAllStripeProducts")]
@@ -67,7 +72,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             {
                 var productId = await _stripeService.CreateStripeProductAsync(productDto);
                 var priceId = await _stripeService.CreateStripePriceAsync(productId, productDto.Price);
-                return Ok(new {ProductId = productId, PriceId = priceId});
+                return Ok(new { ProductId = productId, PriceId = priceId });
             }
             catch (Exception ex)
             {
@@ -76,11 +81,25 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         }
 
         [HttpPost("CreateCheckoutSession")]
-        public async Task<IActionResult> CreateCheckoutSession(List<string> prices)
+        public async Task<IActionResult> CreateCheckoutSession(List<string> productIds, string customerId)
         {
             try
             {
-                return Ok(await _stripeService.CreateCheckoutSessionAsync(prices));
+                List<string> prices = new List<string>();
+                foreach (var productId in productIds)
+                {
+                    var price = await _stripeService.GetStripePriceIdByProductIdAsync(productId);
+                    if (price != null)
+                    {
+                        prices.Add(price);
+                    }
+                    else
+                    {
+                        return NotFound($"price for product {productId} not found");
+                    }
+                }
+
+                return Ok(await _stripeService.CreateCheckoutSessionAsync(prices, customerId));
             }
             catch (Exception ex)
             {
@@ -106,7 +125,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         {
             try
             {
-               return Ok(await _stripeService.UpdateStripeProductAsync(id, productDto));
+                return Ok(await _stripeService.UpdateStripeProductAsync(id, productDto));
             }
             catch (Exception ex)
             {
@@ -126,19 +145,19 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return StatusCode(500, ex.Message);
             }
         }
-        
+
 
         [HttpDelete("ArchiveProduct")]
         public async Task<IActionResult> ArchiveProduct(string productId)
         {
             try
-            {                
+            {
                 return Ok(await _stripeService.ArchiveStripeProductAsync(productId));
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
-            }            
+            }
         }
 
         [HttpDelete("DeleteProduct")]
@@ -152,6 +171,21 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             {
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpPost("CreateRefund")]
+        public async Task<IActionResult> CreateRefund(string paymentIntentId, long amount, string reason)
+        {
+            try
+            {
+                return Ok(await _stripeService.CreateRefundAsync(paymentIntentId, amount, reason));
+
+            }
+            catch (StripeException ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
         }
 
         [HttpPost("StripeWebhook")]
@@ -168,31 +202,59 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                     300,
                     false
                 );
+
                 if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted)
                 {
                     var session = stripeEvent.Data.Object as Session;
+                    var transaction = new StripeTransaction
+                    {
+                        StripeSessionId = session?.Id,
+                        PaymentIntentId = session?.PaymentIntentId,
+                        PaymentMethod = session?.PaymentMethodTypes[0],
+                        PaymentStatus = session?.PaymentStatus ?? "unknown",
+                        CreatedAt = DateTime.UtcNow,
+                        Currency = session?.Currency,
+                        Amount = session?.AmountTotal ?? 0,
+                        CustomerId = session?.CustomerId,
+                        ClientIp = HttpContext.Connection.RemoteIpAddress.ToString() //??
+                    };
 
-                    if(session.Status == "complete")
+                    if (session?.PaymentStatus == "paid")
                     {
                         Console.WriteLine($"Checkout completed for session: {session.Id}");
                     }
                     else
                     {
-                        Console.WriteLine($"Checkout for session: {session.Id} complited with status {session.Status}");
+                        Console.WriteLine($"Checkout for session: {session.Id} complited with status {session.PaymentStatus}");
                     }
-                    
-                }
-                else if (stripeEvent.Type == EventTypes.CheckoutSessionAsyncPaymentSucceeded)
-                {
-                    var session = stripeEvent.Data.Object as Session;
 
-                    Console.WriteLine($"async checkout payment succeeded for session: {session.Id}");
+                    _unitOfWork.GetRepository<StripeTransaction>().Create(transaction);
+                    await _unitOfWork.SaveShangesAsync();
                 }
-                else if (stripeEvent.Type == EventTypes.CheckoutSessionAsyncPaymentFailed)
+                else if (stripeEvent.Type == EventTypes.PaymentIntentPaymentFailed)
                 {
-                    var session = stripeEvent.Data.Object as Session;
+                    var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+                    var transaction = new StripeTransaction
+                    {
+                        PaymentIntentId = paymentIntent?.Id,
+                        PaymentStatus = "failed",
+                        Amount = paymentIntent?.Amount ?? 0,
+                        Currency = paymentIntent?.Currency,
+                        CustomerId = paymentIntent?.CustomerId,
+                        StatusReason = paymentIntent?.LastPaymentError?.Message,
+                        CreatedAt = DateTime.UtcNow
+                    };
 
-                    Console.WriteLine($"async checkout payment failed for session: {session.Id}");
+                    _unitOfWork.GetRepository<StripeTransaction>().Create(transaction);
+                    await _unitOfWork.SaveShangesAsync();
+
+                    Console.WriteLine($"Payment failed for PaymentIntent: {paymentIntent?.Id}");
+                }
+                else if (stripeEvent.Type == EventTypes.ChargeRefunded)
+                {
+                    var charge = stripeEvent.Data.Object as Charge;
+                    Console.WriteLine($"Charge refunded: {charge.Id}");
+                    //todo add refund info to db 
                 }
                 else
                 {
@@ -206,6 +268,5 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return BadRequest();
             }
         }
-
     }
 }

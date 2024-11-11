@@ -21,6 +21,7 @@ namespace Payment.BLL.Services.Payment
         private readonly PriceService _priceService;
         private readonly SessionService _sessionService;
         private readonly CustomerService _customerService;
+        private readonly RefundService _refundService;
 
         public StripeService()
         {
@@ -28,6 +29,7 @@ namespace Payment.BLL.Services.Payment
             _priceService = new PriceService();
             _sessionService = new SessionService();
             _customerService = new CustomerService();
+            _refundService = new RefundService();
         }
 
         public async Task<StripeList<Product>> GetAllStripeProductsAsync()
@@ -148,7 +150,7 @@ namespace Payment.BLL.Services.Payment
             return updatedProduct.Active;
         }
 
-        public async Task<string> CreateCheckoutSessionAsync(List<string> prices)
+        public async Task<string> CreateCheckoutSessionAsync(List<string> prices, string customerId)
         {
             var lineItems = prices.Select(product => new SessionLineItemOptions
             {
@@ -158,14 +160,29 @@ namespace Payment.BLL.Services.Payment
 
             var options = new SessionCreateOptions
             {
-                PaymentMethodTypes = new List<string> { "card", "paypal", "sepa_debit"},
+                PaymentMethodTypes = new List<string> { "card"/*, "paypal", "sepa_debit"*/},
                 LineItems = lineItems,
                 Mode = "payment",
-                SuccessUrl = "https://your-website.com/success?session_id={CHECKOUT_SESSION_ID}",
-                CancelUrl = "https://your-website.com/cancel",
+                Customer = customerId,
+                //SuccessUrl = "https://your-website.com/success?session_id={CHECKOUT_SESSION_ID}",
+                SuccessUrl = "https://www.meme-arsenal.com/memes/a2c78af09e451831566e7e90c4269a5c.jpg",
+                CancelUrl = "https://cs14.pikabu.ru/images/previews_comm/2023-10_2/1696889858182579745.jpg",
             };
             Session session = await _sessionService.CreateAsync(options);            
             return session.Url;
+        }
+
+        public async Task<string?> GetStripePriceIdByProductIdAsync(string stripeProductId)
+        {
+            var price = (await _priceService.ListAsync(new PriceListOptions
+            {
+                Product = stripeProductId
+            })).FirstOrDefault();
+            if(price != null)
+            {
+                return price.Id;
+            }
+            return null;
         }
 
         public Customer CreateStripeCustomer(UserDto userDto)
@@ -185,6 +202,50 @@ namespace Payment.BLL.Services.Payment
             var customer = _customerService.Create(customerOptions);
 
             return customer;
+        }
+
+        public async Task<string> CreateRefundAsync(string paymentIntentId, long amount, string reason)
+        {
+            try
+            {
+                var refundOptions = new RefundCreateOptions
+                {
+                    PaymentIntent = paymentIntentId,
+                    Amount = amount, // Сумма возврата в центах (optional, для частичного возврата)
+                    Reason = reason ?? "requested_by_customer" //"duplicate", "fraudulent", "requested_by_customer"
+                };
+
+                Refund refund = await _refundService.CreateAsync(refundOptions);
+                return refund.Id;
+            }
+            catch (StripeException ex)
+            {
+                Console.WriteLine($"Error occurred during refund: {ex.Message} \n" +
+                    $"Error code: {ex.StripeError?.Code} \n" +
+                    $"Error type: {ex.StripeError?.Type}");
+
+                if (ex.StripeError?.Code == "insufficient_funds")
+                {
+                    Console.WriteLine("Insufficient funds for refund.");
+                    // Логика для обработки недостатка средств
+                }
+                else if (ex.StripeError?.Code == "invalid_request_error")
+                {
+                    Console.WriteLine("Invalid request. Please check payment ID or other parameters.");
+                    // Логика для обработки ошибки с неверными параметрами запроса
+                }
+                else if (ex.StripeError?.Code == "api_error")
+                {
+                    Console.WriteLine("Stripe API error occured");
+                    // Логика для обработки ошибки в Stripe API
+                }
+                else if (ex.StripeError?.Code == "card_error")
+                {
+                    Console.WriteLine("problem with the card occured (for example, expired)");
+                    // Логика для обработки ошибки из-за проблем с картой (например, истек срок действия).
+                }
+                throw ex;
+            }
         }
     }
 }

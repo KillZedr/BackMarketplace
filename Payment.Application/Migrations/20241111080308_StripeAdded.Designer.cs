@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Payment.Application;
@@ -11,9 +12,11 @@ using Payment.Application;
 namespace Payment.Application.Migrations
 {
     [DbContext(typeof(Payment_DbContext))]
-    partial class Payment_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20241111080308_StripeAdded")]
+    partial class StripeAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,45 +223,16 @@ namespace Payment.Application.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<long>("Amount")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("ClientIp")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CustomerId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InvoiceId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PaymentIntentId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PaymentMethod")
-                        .HasColumnType("text");
 
                     b.Property<string>("PaymentStatus")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("StatusReason")
-                        .HasColumnType("text");
-
                     b.Property<string>("StripeSessionId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
