@@ -10,6 +10,7 @@ using PayPal;
 using PayPal.Api;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -149,6 +150,39 @@ namespace Payment.BLL.Services.PayPal
                 _logger.LogError(ex, "Error creating payment");
                 return null;
             }
+        }
+
+        public async Task<string> CreateDonationPaymentAndGetApprovalUrlAsync(decimal price, string currency, string email)
+        {
+            var payment = new PayPalPayment
+            {
+                intent = "sale",
+                payer = new Payer { payment_method = "paypal" },
+                transactions = new List<Transaction>
+        {
+            new Transaction
+            {
+                amount = new Amount
+                {
+                    currency = currency,
+                    total = price.ToString("F2", CultureInfo.InvariantCulture)
+                },
+                description = "Donation",
+                custom = email // Custom data (email) for future reference
+            }
+        },
+                redirect_urls = new RedirectUrls
+                {
+                    cancel_url = "https://localhost:7257/api/paypal/cancel",
+                    return_url = "https://localhost:7257/api/paypal/execute-donation"
+                }
+            };
+
+            // Создание платежа через PayPal API
+            var createdPayment = payment.Create(_apiContext);
+            var approvalUrl = createdPayment.links.FirstOrDefault(link => link.rel == "approval_url")?.href;
+
+            return approvalUrl;
         }
         public async Task<string> CreatePaymentAndGetApprovalUrlAsync(PaymentBasket basket)
         {

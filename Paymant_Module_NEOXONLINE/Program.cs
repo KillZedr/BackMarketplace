@@ -19,6 +19,7 @@ namespace Paymant_Module_NEOXONLINE
                 .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
             });
             builder.Services.AddCors(options =>
             {
@@ -33,6 +34,7 @@ namespace Paymant_Module_NEOXONLINE
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.Configure<PayPalSettings>(builder.Configuration.GetSection("PayPal"));
             builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

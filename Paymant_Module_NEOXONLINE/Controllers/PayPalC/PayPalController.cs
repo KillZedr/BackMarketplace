@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.Notifications;
 using Payment.BLL.Contracts.PayPal;
+using Payment.BLL.CurrencyDonationAndPay;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayPal;
 using PayPal.Api;
@@ -60,6 +62,84 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
                     return StatusCode(500, "Failed to create payment");
                 }
                 return Ok(payment);
+            }
+        }
+
+
+        [HttpPost("create-donation")]
+        public async Task<IActionResult> CreateDonation([FromQuery] string email, [FromQuery] decimal price, [FromQuery] CurrencyDto currency)
+        {
+
+            // Используем currency.ToString(), чтобы передать строковое значение валюты в платежный сервис
+            string currencyCode = currency.ToString();
+            if (string.IsNullOrEmpty(email) || price <= 0 || string.IsNullOrEmpty(currencyCode))
+            {
+                return BadRequest("Invalid donation details provided.");
+            }
+
+            // Создаем данные для custom поля (для использования при подтверждении платежа)
+            var customData = new { Email = email };
+            var customJson = JsonConvert.SerializeObject(customData);
+
+            // Генерация платежа через PayPal
+            var approvalUrl = await _payPalService.CreateDonationPaymentAndGetApprovalUrlAsync(price, currencyCode, customJson);
+
+            if (!string.IsNullOrEmpty(approvalUrl))
+            {
+                return Ok(new { approvalUrl });
+            }
+
+            return BadRequest(new { message = "Failed to create donation payment" });
+        }
+
+        [HttpGet("execute-donation")]
+        public async Task<IActionResult> ExecuteDonation(string paymentId, string PayerID)
+        {
+            if (string.IsNullOrEmpty(paymentId) || string.IsNullOrEmpty(PayerID))
+            {
+                _logger.LogError("Invalid paymentId or PayerID");
+                return BadRequest("Invalid paymentId or PayerID");
+            }
+
+            var result = await _payPalService.ExecutePaymentAsync(paymentId, PayerID);
+
+            if (result != null && result.state == "approved")
+            {
+                _logger.LogInformation($"Donation executed successfully: {result.id}");
+
+                // Извлечение email из custom поля
+                var customData = JsonConvert.DeserializeObject<dynamic>(result.transactions[0].custom);
+                string email = customData?.Email;
+
+                // Отправка уведомления на email о подтверждении оплаты
+                await _emailNotificationService.SendDonationSuccessNotificationAsync(email, result.transactions[0].amount.total,
+                    result.transactions[0].amount.currency, DateTime.UtcNow);
+
+
+                var transaction = new PayPalPaymentTransaction
+                {
+                    PaymentId = result.id,
+                    PayerId = PayerID,
+                    SaleId = result.transactions[0].related_resources[0].sale.id,
+                    Status = result.state,
+                    Amount = decimal.Parse(result.transactions[0].amount.total, CultureInfo.InvariantCulture),
+                    Currency = result.transactions[0].amount.currency,
+                    Description = $"Donation approved {result.payer.payer_info.email}"
+
+                };
+
+
+                var repoPayPalTransactions = _unitOfWork.GetRepository<PayPalPaymentTransaction>();
+
+                repoPayPalTransactions.Create(transaction);
+                await _unitOfWork.SaveShangesAsync();
+
+                return Ok(new { message = "Donation executed successfully", paymentId = result.id });
+            }
+            else
+            {
+                _logger.LogError("Error executing donation");
+                return StatusCode(500, "Error executing donation");
             }
         }
 

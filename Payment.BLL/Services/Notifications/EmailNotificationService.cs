@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Payment.BLL.Contracts.Notifications;
 using Payment.BLL.Settings.NotificationSettings;
 using Microsoft.Extensions.Options;
+using System.Net.Sockets;
 
 namespace Payment.BLL.Services.Notifications
 {
@@ -100,8 +101,72 @@ namespace Payment.BLL.Services.Notifications
         }
 
 
+        public async Task SendDonationSuccessNotificationAsync(string email, string amount, string currency, DateTime paymentTime)
+        {
+            if (await CheckEmailExistsAsync(email))
+            {
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(_smtpSettings.FromEmail, _smtpSettings.SenderName),
+                    Subject = "Thank You for Your Donation!",
+                    Body = $@"
+            <h3>Thank you for your donation!</h3>
+            <p>Your donation of {amount} {currency} has been successfully received.</p>
+            <p><strong>Date and Time:</strong> {paymentTime.ToString("f")}</p>",
+                    IsBodyHtml = true,
+                };
+                mailMessage.To.Add(email);
 
-        private async Task SendEmailAsync(string toEmail, string subject, string body)
+                await _smtpClient.SendMailAsync(mailMessage);
+                _logger.LogInformation($"Donation confirmation email sent to {email}");
+            }
+            else
+            {
+                _logger.LogWarning($"Email address {email} does not exist.");
+                
+            }
+        }
+
+        private async Task<bool> CheckEmailExistsAsync(string email)
+        {
+
+            try
+            {
+                using (var client = new TcpClient())
+                {
+                    await client.ConnectAsync(_smtpSettings.Server, _smtpSettings.Port);
+                    using (var stream = client.GetStream())
+                    using (var reader = new StreamReader(stream))
+                    using (var writer = new StreamWriter(stream) { AutoFlush = true })
+                    {
+                        // Приветствие от сервера
+                        await reader.ReadLineAsync();
+
+                        // Отправляем HELO
+                        await writer.WriteLineAsync($"HELO {_smtpSettings.Server}");
+                        await reader.ReadLineAsync();
+
+                        // Отправляем MAIL FROM
+                        await writer.WriteLineAsync($"MAIL FROM:<{_smtpSettings.FromEmail}>");
+                        await reader.ReadLineAsync();
+
+                        // Отправляем RCPT TO (запрос на существование email)
+                        await writer.WriteLineAsync($"RCPT TO:<{email}>");
+                        var response = await reader.ReadLineAsync();
+
+                        // Если ответ начинается с "250", то email существует
+                        return response.StartsWith("250");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking email existence");
+                return false;
+            }
+        }
+
+            private async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             try
             {

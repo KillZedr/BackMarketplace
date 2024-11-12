@@ -15,5 +15,6 @@ namespace Payment.BLL.Contracts.Notifications
         Task SendInsufficientFundsNotificationAsync(string toEmail, string paymentId);
 
         Task SendSuccessNotificationAsync(string email, decimal amount, string currency, DateTime paymentTime);
+        Task SendDonationSuccessNotificationAsync(string email, string amount, string currency, DateTime paymentTime);
     }
 }
