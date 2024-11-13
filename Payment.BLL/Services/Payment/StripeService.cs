@@ -26,6 +26,8 @@ namespace Payment.BLL.Services.Payment
         private readonly RefundService _refundService;
         private readonly PaymentIntentService _paymentIntentService;
 
+
+
         public StripeService()
         {
             _productService = new Stripe.ProductService();
