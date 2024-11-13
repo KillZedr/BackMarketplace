@@ -40,6 +40,7 @@ namespace Paymant_Module_NEOXONLINE
             builder.Services.AddSwaggerGen();
 
             Startup.AddServices(builder);
+            Startup.ConfigureStripe(builder);
             ModuleHead.RegisterModule(builder.Services);
 
             var app = builder.Build();

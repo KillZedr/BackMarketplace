@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.PayProduct;
-using Payment.Domain.DTOs;
+using Payment.BLL.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
 using Payment.BLL.Services.PayProduct;
 using System.Xml.Linq;
 using Payment.BLL.Contracts.PayProduct;
+using Payment.BLL.Contracts.Payment;
 
 namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
 {
@@ -148,6 +149,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             {
                 _unitOfWork.GetRepository<Product>().Delete(deletedProduct);
                 await _unitOfWork.SaveShangesAsync();
+                //await _stripeService.DeleteStripeProductAsync(deletedProduct.Id);
                 return Ok($"{deletedProduct} has been deleted");
             }
         }
