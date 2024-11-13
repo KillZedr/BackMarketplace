@@ -258,17 +258,6 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
                 findTransaction.Description = "Refund processed";
                 findTransaction.RefundId = refundResult.RefundTransactionId;
 
-                /*var refundTransaction = new PayPalPaymentTransaction
-                {
-                    PaymentId = paymentId,
-                    Status = "Refunded",
-                    RefundId = refundResult.RefundTransactionId,
-                    Amount = refundResult.RefundAmount,
-                    Currency = refundResult.Currency,
-                    Description = "Refund processed",
-                    RefundedDate = DateTime.UtcNow
-                };*/
-
                 var repoPayPalTransaction = _unitOfWork.GetRepository<PayPalPaymentTransaction>();
                 repoPayPalTransaction.Update(findTransaction);
                 await _unitOfWork.SaveShangesAsync();
