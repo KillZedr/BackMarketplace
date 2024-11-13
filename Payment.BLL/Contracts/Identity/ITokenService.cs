@@ -1,7 +1,7 @@
 ﻿using Payment.Domain.Identity;
 using System.Security.Claims;
 
-namespace Payment.BLL.Contracts.Identity.Abstraction
+namespace Payment.BLL.Contracts.Identity
 {
     public interface ITokenService : IService
     {

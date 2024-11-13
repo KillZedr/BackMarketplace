@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Payment.BLL.Contracts.Identity.Abstraction;
+using Payment.BLL.Contracts.Identity;
 using Payment.Domain.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Payment.Application;
@@ -11,9 +12,11 @@ using Payment.Application;
 namespace Payment.Application.Migrations
 {
     [DbContext(typeof(Payment_DbContext))]
-    partial class Payment_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20241111102924_MoreFieldsToStripeTransactionAdded")]
+    partial class MoreFieldsToStripeTransactionAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,7 +41,8 @@ namespace Payment.Application.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.HasIndex("UserId1");
 
@@ -124,16 +128,9 @@ namespace Payment.Application.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("UserId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Subscription");
                 });
@@ -218,40 +215,6 @@ namespace Payment.Application.Migrations
                     b.ToTable("Product");
                 });
 
-            modelBuilder.Entity("Payment.Domain.StripeDonation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsSuccessful")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("PaymentIntentId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("StripeDonation");
-                });
-
             modelBuilder.Entity("Payment.Domain.StripeTransaction", b =>
                 {
                     b.Property<int>("Id")
@@ -308,8 +271,8 @@ namespace Payment.Application.Migrations
             modelBuilder.Entity("Payment.Domain.ECommerce.Basket", b =>
                 {
                     b.HasOne("Payment.Domain.Identity.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne()
+                        .HasForeignKey("Payment.Domain.ECommerce.Basket", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -358,19 +321,7 @@ namespace Payment.Application.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Payment.Domain.Identity.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Payment.Domain.Identity.User", null)
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("UserId1");
-
                     b.Navigation("Product");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Payment.Domain.PayProduct.Product", b =>
@@ -392,8 +343,6 @@ namespace Payment.Application.Migrations
             modelBuilder.Entity("Payment.Domain.Identity.User", b =>
                 {
                     b.Navigation("Basket");
-
-                    b.Navigation("Subscriptions");
                 });
 
             modelBuilder.Entity("Payment.Domain.PayProduct.Category", b =>
