@@ -230,7 +230,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                         Currency = session?.Currency,
                         Amount = session?.AmountTotal ?? 0,
                         CustomerId = session?.CustomerId,
-                        ClientIp = HttpContext.Connection.RemoteIpAddress.ToString() //??
+                        ClientIp = HttpContext.Connection.RemoteIpAddress.ToString() //???
                     };
 
                     if (session?.PaymentStatus == "paid")
