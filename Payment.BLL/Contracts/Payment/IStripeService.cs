@@ -1,5 +1,6 @@
 ﻿using Payment.BLL.DTOs;
 using Payment.Domain.DTOs;
+using Payment.Domain.ECommerce;
 using Stripe;
 using System;
 using System.Collections.Generic;
@@ -28,5 +29,11 @@ namespace Payment.BLL.Contracts.Payment
         Task<bool> ActivateStripeProductAsync(string id);
 
         Task<Stripe.Product> UpdateStripeProductAsync(string id, ProductCreationDto productDto);
+
+        // Новые методы для поддержки Google Pay и SEPA платежей
+        Task<string> ProcessSepaPaymentAsync(PaymentBasket basket, SepaPaymentRequest sepaRequest);
+        Task<string> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken);
+        Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken);
+        Task<string> CreateSepaDonationAsync(decimal amount, string currency, SepaPaymentRequest sepaRequest, UserDto user);
     }
 }
