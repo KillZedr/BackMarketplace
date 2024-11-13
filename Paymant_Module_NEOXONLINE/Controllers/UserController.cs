@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Payment.Application.Payment_DAL.Contracts;
-using Payment.BLL.Contracts.Identity.Abstraction;
+using Payment.BLL.Contracts.Identity;
 using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.Identity;
