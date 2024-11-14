@@ -1,0 +1,39 @@
+{
+  "Version": 1,
+  "Hash": "Tcj1XQr0nNAGPyxWO/YeiJYUHGc+OMqHjEhr5sC9ADw=",
+  "Source": "Paymant_Module_NEOXONLINE",
+  "BasePath": "_content/Paymant_Module_NEOXONLINE",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Paymant_Module_NEOXONLINE\\wwwroot",
+      "Source": "Paymant_Module_NEOXONLINE",
+      "ContentRoot": "C:\\Users\\Илья\\Desktop\\GitNeoxonline\\NEOXONLINE_PaymentMicroservices\\Paymant_Module_NEOXONLINE\\wwwroot\\",
+      "BasePath": "_content/Paymant_Module_NEOXONLINE",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\Илья\\Desktop\\GitNeoxonline\\NEOXONLINE_PaymentMicroservices\\Paymant_Module_NEOXONLINE\\wwwroot\\Pages\\htmlpage.html",
+      "SourceId": "Paymant_Module_NEOXONLINE",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Илья\\Desktop\\GitNeoxonline\\NEOXONLINE_PaymentMicroservices\\Paymant_Module_NEOXONLINE\\wwwroot\\",
+      "BasePath": "_content/Paymant_Module_NEOXONLINE",
+      "RelativePath": "Pages/htmlpage.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Pages\\htmlpage.html"
+    }
+  ]
+}

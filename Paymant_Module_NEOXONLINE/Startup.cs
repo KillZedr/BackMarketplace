@@ -22,7 +22,7 @@ namespace Paymant_Module_NEOXONLINE
         {
             
             AddSerilog(builder);
-            RegisterDAL(builder.Services);
+            RegisterDAL(builder.Services, builder.Configuration);
 
             var jwtIss = builder.Configuration.GetSection("Jwt:Iss").Get<string>();
             var jwtAud = builder.Configuration.GetSection("Jwt:Aud").Get<string>();
@@ -53,12 +53,14 @@ namespace Paymant_Module_NEOXONLINE
 
         }
 
-        public static void RegisterDAL(IServiceCollection services)
+        public static void RegisterDAL(IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<DbContextOptions<Payment_DbContext>>(provider =>
             {
+                string connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
+                           ?? configuration.GetConnectionString("DefaultConnection");
                 var builder = new DbContextOptionsBuilder<Payment_DbContext>();
-                builder.UseNpgsql("host=localhost;port=5432;database=Payment_Module_Db;Username=postgres;Password=KIDPay321");
+                builder.UseNpgsql(connectionString);
                 return builder.Options;
             });
 

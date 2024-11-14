@@ -1,9 +1,11 @@
 
+using Microsoft.OpenApi.Models;
 using Payment.BLL;
 using Payment.BLL.Settings.NotificationSettings;
 using Payment.BLL.Settings.PayPalSetting;
 using Serilog;
 using System.Configuration;
+using System.Reflection;
 
 namespace Paymant_Module_NEOXONLINE
 {
@@ -37,7 +39,25 @@ namespace Paymant_Module_NEOXONLINE
 
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "API Documentation",
+                    Description = "API for managing payments, donations, and notifications",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Support",
+                        Email = "support@example.com"
+                    }
+                });
+
+                // Add comments for XML documentation
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
 
             Startup.AddServices(builder);
             Startup.ConfigureStripe(builder);
@@ -50,8 +70,14 @@ namespace Paymant_Module_NEOXONLINE
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
+                    c.RoutePrefix = string.Empty; // Swagger at root
+                });
             }
 
 

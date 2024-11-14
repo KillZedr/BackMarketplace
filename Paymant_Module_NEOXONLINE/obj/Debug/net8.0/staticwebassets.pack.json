@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\Илья\\Desktop\\GitNeoxonline\\NEOXONLINE_PaymentMicroservices\\Paymant_Module_NEOXONLINE\\wwwroot\\Pages\\htmlpage.html",
+      "PackagePath": "staticwebassets\\Pages\\htmlpage.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.Paymant_Module_NEOXONLINE.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.Paymant_Module_NEOXONLINE.props",
+      "PackagePath": "build\\Paymant_Module_NEOXONLINE.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.Paymant_Module_NEOXONLINE.props",
+      "PackagePath": "buildMultiTargeting\\Paymant_Module_NEOXONLINE.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.Paymant_Module_NEOXONLINE.props",
+      "PackagePath": "buildTransitive\\Paymant_Module_NEOXONLINE.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
