@@ -207,7 +207,7 @@ namespace Payment.BLL.Services.Payment
                 {
                     Line1 = userDto.Address,
                     City = userDto.City,
-                    Country = userDto.Сountry
+                    Country = userDto.Country
                 },                
             };
             var customer = _customerService.Create(customerOptions);
@@ -448,32 +448,28 @@ namespace Payment.BLL.Services.Payment
             }
         }
 
-        public async Task<string> CreateSepaDonationAsync(decimal amount, string currency, SepaPaymentRequest sepaRequest, UserDto user)
+
+        public async Task<string> CreateSepaDonationAsync(SepaDonationRequest request, string customerId)
         {
             try
             {
-                if (amount <= 0)
-                {
-                    return "Donation amount must be greater than zero.";
-                }
-
-                if (string.IsNullOrEmpty(sepaRequest.Iban))
-                {
-                    return "IBAN is missing.";
-                }
+                var customerService = new CustomerService();
+                var customer = await customerService.GetAsync(customerId);
 
                 var options = new PaymentIntentCreateOptions
                 {
-                    Amount = (long)(amount * 100), // Convert amount to cents
-                    Currency = currency,
+                    Amount = (long)(request.Amount * 100),
+                    Currency = request.Currency,
+                    Customer = customerId,
                     PaymentMethodTypes = new List<string> { "sepa_debit" },
                     Metadata = new Dictionary<string, string>
-                {
-                { "DonationType", "SEPA" }
-                }
+            {
+                { "TransactionType", "SEPA_Donation" }
+            }
                 };
 
-                var paymentIntent = await _paymentIntentService.CreateAsync(options);
+                var paymentIntentService = new PaymentIntentService();
+                var paymentIntent = await paymentIntentService.CreateAsync(options);
 
                 var confirmOptions = new PaymentIntentConfirmOptions
                 {
@@ -482,18 +478,12 @@ namespace Payment.BLL.Services.Payment
                         Type = "sepa_debit",
                         SepaDebit = new PaymentIntentPaymentMethodDataSepaDebitOptions
                         {
-                            Iban = sepaRequest.Iban
+                            Iban = request.SepaRequest.Iban
                         },
                         BillingDetails = new PaymentIntentPaymentMethodDataBillingDetailsOptions
                         {
-                            Email = user.Email,
-                            Name = user.Name,
-                            Address = new AddressOptions
-                            {
-                                Line1 = user.Address,
-                                City = user.City,
-                                Country = user.Сountry
-                            }
+                            Name = customer.Name,
+                            Email = customer.Email
                         }
                     },
                     MandateData = new PaymentIntentMandateDataOptions
@@ -503,14 +493,14 @@ namespace Payment.BLL.Services.Payment
                             Type = "online",
                             Online = new PaymentIntentMandateDataCustomerAcceptanceOnlineOptions
                             {
-                                IpAddress = sepaRequest.IpAddress,
-                                UserAgent = sepaRequest.UserAgent
+                                IpAddress = request.SepaRequest.IpAddress,
+                                UserAgent = request.SepaRequest.UserAgent
                             }
                         }
                     }
                 };
 
-                var confirmedPaymentIntent = await _paymentIntentService.ConfirmAsync(paymentIntent.Id, confirmOptions);
+                var confirmedPaymentIntent = await paymentIntentService.ConfirmAsync(paymentIntent.Id, confirmOptions);
 
                 if (confirmedPaymentIntent.Status == "succeeded")
                 {
@@ -534,6 +524,14 @@ namespace Payment.BLL.Services.Payment
                 return $"Error processing donation: {ex.Message}";
             }
         }
+
+
+
+
+
+
+
+
 
 
     }

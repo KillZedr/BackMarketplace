@@ -6,6 +6,7 @@ using Payment.Domain.ECommerce;
 using Payment.Application.Payment_DAL.Contracts;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
 
 namespace Paymant_Module_NEOXONLINE.Controllers
 {
@@ -63,20 +64,16 @@ namespace Paymant_Module_NEOXONLINE.Controllers
                 return BadRequest(new { success = false, message = resultMessage });
             }
         }
+
         [HttpPost("create-donation")]
         public async Task<IActionResult> CreateSepaDonation([FromBody] SepaDonationRequest request)
         {
-            if (request.Amount <= 0 || string.IsNullOrEmpty(request.SepaRequest?.Iban))
+            if (request.Amount <= 0 || string.IsNullOrEmpty(request.SepaRequest?.Iban) || string.IsNullOrEmpty(request.CustomerId))
             {
-                return BadRequest(new { message = "Invalid donation amount or missing IBAN." });
+                return BadRequest(new { message = "Invalid donation amount, missing IBAN, or customer ID." });
             }
 
-            var result = await _stripeService.CreateSepaDonationAsync(
-                request.Amount,
-                request.Currency,
-                request.SepaRequest,
-                request.User
-            );
+            var result = await _stripeService.CreateSepaDonationAsync(request, request.CustomerId);
 
             if (result.Contains("Donation completed successfully"))
             {
@@ -92,5 +89,10 @@ namespace Paymant_Module_NEOXONLINE.Controllers
                 return BadRequest(new { success = false, message = result });
             }
         }
+
+
+
+
+
     }
 }

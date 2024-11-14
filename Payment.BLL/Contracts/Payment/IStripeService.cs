@@ -34,6 +34,6 @@ namespace Payment.BLL.Contracts.Payment
         Task<string> ProcessSepaPaymentAsync(PaymentBasket basket, SepaPaymentRequest sepaRequest);
         Task<string> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken);
         Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken);
-        Task<string> CreateSepaDonationAsync(decimal amount, string currency, SepaPaymentRequest sepaRequest, UserDto user);
+        Task<string> CreateSepaDonationAsync(SepaDonationRequest request, string customerId);
     }
 }

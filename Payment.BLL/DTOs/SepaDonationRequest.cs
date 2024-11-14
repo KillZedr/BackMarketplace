@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Payment.BLL.DTOs;
 
-namespace Payment.BLL.DTOs
+public class SepaDonationRequest
 {
-    public class SepaDonationRequest
-    {
-        public decimal Amount { get; set; }
-        public string Currency { get; set; }
-        public SepaPaymentRequest SepaRequest { get; set; }
-        public UserDto User { get; set; }
-    }
-}
+    public decimal Amount { get; set; }
+    public string Currency { get; set; }
+    public SepaPaymentRequest SepaRequest { get; set; }
+    public string CustomerId { get; set; }  // Добавляем поле для передачи customerId
+}   
