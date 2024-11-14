@@ -376,3 +376,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Paymant_Module_NEOXONLINE/Program.cs
