@@ -5,6 +5,7 @@ using Payment.BLL.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Application.Payment_DAL.Contracts;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Paymant_Module_NEOXONLINE.Controllers
 {
@@ -26,9 +27,15 @@ namespace Paymant_Module_NEOXONLINE.Controllers
         [HttpPost("sepa")]
         public async Task<IActionResult> ProcessSepaPayment([FromBody] SepaPaymentRequest sepaRequest, [FromQuery] int basketId)
         {
+
             var basket = _unitOfWork.GetRepository<PaymentBasket>()
                 .AsQueryable()
+                .Include(pb => pb.Basket)  
+                .ThenInclude(b => b.User)  
                 .FirstOrDefault(pb => pb.Id == basketId);
+
+
+            
 
             if (basket == null)
             {

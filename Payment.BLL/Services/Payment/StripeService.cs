@@ -354,7 +354,7 @@ namespace Payment.BLL.Services.Payment
                         },
                         BillingDetails = new PaymentIntentPaymentMethodDataBillingDetailsOptions
                         {
-                            Email = basket.Basket.User.Email,
+                            Email = basket.UserEmail,
                             Name = basket.Basket.User.FirstName
                         }
                     },
