@@ -19,7 +19,7 @@ namespace Payment.BLL.Contracts.Payment
         Task<string> CreateStripePriceAsync(string productId, decimal priceAmount);
         Task<string> CreateCheckoutSessionAsync(List<string> prices, string customerId);
         Customer CreateStripeCustomer(UserDto userDto);
-        Task<string> CreateRefundAsync(string paymentIntentId, long amount, string reason);
+        Task<string> CreateRefundAsync(string paymentIntentId, decimal amount, string reason);
         Task<string> CreateDonationAsync(decimal amount, string currency, string customerId);
 
         Task<bool> DeleteStripeProductAsync(string productId);

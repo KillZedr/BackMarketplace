@@ -32,6 +32,12 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             _unitOfWork = unitOfWork;
         }
 
+        /// <summary>
+        /// Gets stripe products
+        /// </summary> 
+        /// <response code="200">returns all stripe products</response>
+		/// <response code="404">no product was found</response>
+        /// <response code="500">server error</response>
         [HttpGet("GetAllStripeProducts")]
         public async Task<IActionResult> GetAllStripeProducts()
         {
@@ -50,6 +56,13 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// Gets stripe product by stripe product id
+        /// </summary> 
+        /// <param name="id">product id in stripe</param>
+        /// <response code="200">returns stripe product</response>
+        /// <response code="404">product with such id not found</response>
+        /// <response code="500">server error</response>
         [HttpGet("GetStripeProduct")]
         public async Task<IActionResult> GetStripeProduct(string id)
         {
@@ -68,6 +81,11 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// Creates stripe product
+        /// </summary> 
+        /// <response code="200">returns the stripe product id and the stripe price id associated with the created product</response>
+        /// <response code="500">server error</response>
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct(ProductCreationDto productDto)
         {
@@ -83,11 +101,22 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// Creates checkout session
+        /// </summary> 
+        /// <param name="productIds">list of product id in stripe</param>
+        /// <param name="customerId">customer id in stripe</param>
+        /// <response code="200">returns the payment link</response>
+        /// <response code="404">one or more products have no prices</response>
+        /// <response code="500">server error</response>
         [HttpPost("CreateCheckoutSession")]
         public async Task<IActionResult> CreateCheckoutSession(List<string> productIds, string customerId)
         {
             try
             {
+                //todo
+                //check if a product exists
+                //check if an user exists
                 List<string> prices = new List<string>();
                 foreach (var productId in productIds)
                 {
@@ -101,7 +130,6 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                         return NotFound($"price for product {productId} not found");
                     }
                 }
-
                 return Ok(await _stripeService.CreateCheckoutSessionAsync(prices, customerId));
             }
             catch (Exception ex)
@@ -110,8 +138,13 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// Creates stripe customer
+        /// </summary> 
+        /// <response code="200">returns stripe customer</response>
+        /// <response code="500">server error</response>
         [HttpPost("CreateStripeCustomer")]
-        public async Task<IActionResult> CreateStripeCustomer1(UserDto userDto)
+        public async Task<IActionResult> CreateStripeCustomer(UserDto userDto)
         {
             try
             {
@@ -123,11 +156,19 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// Updates stripe product
+        /// </summary> 
+        /// <param name="id">product id in stripe</param>
+        /// <response code="200">returns updated product</response>
+        /// <response code="500">server error</response>
         [HttpPut("UpdateProduct")]
         public async Task<IActionResult> UpdateProduct(string id, ProductCreationDto productDto)
         {
             try
             {
+                //todo
+                //check if product id exists
                 return Ok(await _stripeService.UpdateStripeProductAsync(id, productDto));
             }
             catch (Exception ex)
@@ -136,6 +177,12 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// Updates stripe product
+        /// </summary> 
+        /// <param name="id">product id in stripe</param>
+        /// <response code="200">returns updated product</response>
+        /// <response code="500">server error</response>
         [HttpPatch("ActivateProduct")]
         public async Task<IActionResult> ActivateProduct(string id)
         {
@@ -149,7 +196,13 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
-
+        /// <summary>
+        /// Archives stripe product
+        /// </summary> 
+        /// <remarks>archive product to disable so that it can’t be added to new invoices or subscriptions. any existing subscriptions that use the product remain active until they’re canceled and any existing payment links that use the product are deactivated. You can’t delete products that have an associated price, but you can archive them.</remarks>
+        /// <param name="id">product id in stripe</param>
+        /// <response code="200">returns true if product archived successfully</response>
+        /// <response code="500">server error</response>
         [HttpDelete("ArchiveProduct")]
         public async Task<IActionResult> ArchiveProduct(string productId)
         {
@@ -163,6 +216,13 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// Deletes stripe product
+        /// </summary> 
+        /// <remarks>You can only delete products that have no prices associated with them. </remarks>
+        /// <param name="productId">product id in stripe</param>
+        /// <response code="200">returns true if product deleted successfully</response>
+        /// <response code="500">server error</response>
         [HttpDelete("DeleteProduct")]
         public async Task<IActionResult> DeleteProduct(string productId)
         {
@@ -176,8 +236,16 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// creates a refund request
+        /// </summary> 
+        /// <param name="paymentIntentId">payment intent id in stripe</param>
+        /// <param name="amount">amount of money to refund</param>
+        /// <param name="reason">reason of refund</param>
+        /// <response code="200">returns refund id</response>
+        /// <response code="500">server error</response>
         [HttpPost("CreateRefund")]
-        public async Task<IActionResult> CreateRefund(string paymentIntentId, long amount, string reason)
+        public async Task<IActionResult> CreateRefund(string paymentIntentId, decimal amount, string reason)
         {
             try
             {
@@ -189,6 +257,15 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// processes the donation
+        /// </summary> 
+        /// <param name="amount">amount of money to donate</param>
+        /// <param name="currency">currency of money</param>
+        /// <param name="customerId">customer id in stripe</param>
+        /// <response code="200">returns clientSecret that should be processed on the front</response>
+        /// <response code="400">incorrect amount of donation</response>
+        /// <response code="500">server error</response>
         [HttpPost("donate")]
         public async Task<IActionResult> Donate(decimal amount, string currency, string customerId)
         {
@@ -202,6 +279,9 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             return Ok(new { clientSecret = secret });
         }
 
+        /// <summary>
+        /// handles stripe requests
+        /// </summary> 
         [HttpPost("StripeWebhook")]
         public async Task<IActionResult> StripeWebhook()
         {
