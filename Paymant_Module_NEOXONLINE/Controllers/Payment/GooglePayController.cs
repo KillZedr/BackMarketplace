@@ -40,15 +40,33 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+
         [HttpPost("create-donation")]
-        public async Task<IActionResult> CreateGooglePayDonation([FromQuery] decimal amount, [FromQuery] string currency, [FromQuery] string googlePayToken)
+        public async Task<IActionResult> CreateGooglePayDonation([FromQuery] decimal amount, [FromQuery] string currency, [FromQuery] string googlePayToken, [FromQuery] string customerId)
         {
-            if (amount <= 0 || string.IsNullOrEmpty(googlePayToken) || string.IsNullOrEmpty(currency))
+            if (amount <= 0 || string.IsNullOrEmpty(googlePayToken) || string.IsNullOrEmpty(currency) || string.IsNullOrEmpty(customerId))
             {
-                return BadRequest("Invalid donation amount, currency, or Google Pay token.");
+                return BadRequest("Invalid donation amount, currency, Google Pay token, or customer ID.");
             }
 
-            var result = await _stripeService.CreateGooglePayDonationAsync(amount, currency, googlePayToken);
+            // Попытка извлечь только `id` из переданного токена
+            string tokenId;
+            try
+            {
+                var tokenData = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(googlePayToken);
+                tokenId = tokenData?.id;
+                if (string.IsNullOrEmpty(tokenId))
+                {
+                    return BadRequest("Invalid token format.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error parsing token: {ex.Message}");
+            }
+
+            // Передаем `amount`, `currency`, `tokenId`, и `customerId` в сервис
+            var result = await _stripeService.CreateGooglePayDonationAsync(amount, currency, tokenId, customerId);
 
             if (result.Contains("completed successfully"))
             {
@@ -63,5 +81,12 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return BadRequest(new { message = result });
             }
         }
+
+
+
+
+
+
+
     }
 }

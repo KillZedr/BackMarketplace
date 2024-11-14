@@ -397,7 +397,8 @@ namespace Payment.BLL.Services.Payment
             }
         }
 
-        public async Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken)
+
+        public async Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId)
         {
             try
             {
@@ -411,11 +412,29 @@ namespace Payment.BLL.Services.Payment
                     return "Google Pay token is missing.";
                 }
 
+                // Привязываем токен к клиенту
+                var customerUpdateOptions = new CustomerUpdateOptions
+                {
+                    Source = googlePayToken, // Добавляем источник для клиента
+                };
+
+                try
+                {
+                    // Обновляем клиента, добавляя источник
+                    await _customerService.UpdateAsync(customerId, customerUpdateOptions);
+                }
+                catch (StripeException ex)
+                {
+                    _logger.LogError(ex, "Failed to attach source to customer.");
+                    return $"Error attaching source to customer: {ex.Message}";
+                }
+
+                // Создаем платеж, используя привязанный источник
                 var options = new ChargeCreateOptions
                 {
                     Amount = (long)(amount * 100), // Amount in cents
                     Currency = currency,
-                    Source = googlePayToken,
+                    Customer = customerId, // Используем `customerId`, к которому привязан источник
                     Description = "Google Pay donation",
                     Metadata = new Dictionary<string, string>
             {
@@ -447,6 +466,11 @@ namespace Payment.BLL.Services.Payment
                 return $"Error processing donation: {ex.Message}";
             }
         }
+
+
+
+
+
 
 
         public async Task<string> CreateSepaDonationAsync(SepaDonationRequest request, string customerId)
