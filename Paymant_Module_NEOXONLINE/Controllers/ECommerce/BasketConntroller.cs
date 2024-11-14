@@ -23,7 +23,10 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 
         public async Task<IActionResult> GetAllBaskets()
         {
-            var repoBasket = await _unitOfWork.GetAllIncluding<Basket>(b => b.ProductInBasket).ToListAsync();
+            var repoBasket = await _unitOfWork.GetAllIncluding<Basket>(b => b.ProductInBasket)
+                .Include(b => b.ProductInBasket)
+                .ThenInclude(pib => pib.Product)
+                .ToListAsync();
             return Ok(repoBasket);
         }
 
