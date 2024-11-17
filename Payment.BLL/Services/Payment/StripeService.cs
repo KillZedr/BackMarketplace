@@ -436,55 +436,56 @@ namespace Payment.BLL.Services.Payment
                     return "Google Pay token is missing.";
                 }
 
-                // Привязываем токен к клиенту
-                var customerUpdateOptions = new CustomerUpdateOptions
+                //  Create a PaymentMethod using the Google Pay token
+                var paymentMethodOptions = new PaymentMethodCreateOptions
                 {
-                    Source = googlePayToken, // Добавляем источник для клиента
+                    Type = "card",
+                    Card = new PaymentMethodCardOptions
+                    {
+                        Token = googlePayToken
+                    }
                 };
 
-                try
-                {
-                    // Обновляем клиента, добавляя источник
-                    await _customerService.UpdateAsync(customerId, customerUpdateOptions);
-                }
-                catch (StripeException ex)
-                {
-                    _logger.LogError(ex, "Failed to attach source to customer.");
-                    return $"Error attaching source to customer: {ex.Message}";
-                }
+                var paymentMethodService = new PaymentMethodService();
+                var paymentMethod = await paymentMethodService.CreateAsync(paymentMethodOptions);
 
-                // Создаем платеж, используя привязанный источник
-
-
-                var options = new ChargeCreateOptions
+                // Create a PaymentIntent using the created PaymentMethod
+                var paymentIntentOptions = new PaymentIntentCreateOptions
                 {
-                    Amount = (long)(amount * 100),
+                    Amount = (long)(amount * 100), 
                     Currency = currency,
+                    PaymentMethod = paymentMethod.Id,
                     Customer = customerId,
                     Description = "Google Pay donation",
                     Metadata = new Dictionary<string, string>
                     {
-                        { "DonationType", "GooglePay" },
-                        { "TransactionType", "GooglePay" }
+                        { "DonationType", "GooglePayDonation" },
+                        { "TransactionType", "GooglePayDonation" }
+                    },
+                    Confirm = true, // Automatically confirm
+                    ReturnUrl = "https://docs.stripe.com",  
+                    AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+                    {
+                        Enabled = true
                     }
                 };
 
-                var charge = await _chargeService.CreateAsync(options);
+                var paymentIntentService = new PaymentIntentService();
+                var paymentIntent = await paymentIntentService.CreateAsync(paymentIntentOptions);
 
-                if (charge.Status == "succeeded")
+                // Check payment status and return result
+                if (paymentIntent.Status == "succeeded")
                 {
-                    _logger.LogInformation("Google Pay donation succeeded. Transaction ID: {TransactionId}", charge.Id);
-                    return $"Donation completed successfully. Transaction ID: {charge.Id}";
+                    _logger.LogInformation("Google Pay donation succeeded. Transaction ID: {TransactionId}", paymentIntent.Id);
+                    return $"Donation completed successfully. Transaction ID: {paymentIntent.Id}";
                 }
-                else if (charge.Status == "pending" || charge.Status == "processing")
+                else if (paymentIntent.Status == "requires_action")
                 {
-                    _logger.LogInformation("Google Pay donation is processing. Transaction ID: {TransactionId}", charge.Id);
-                    return $"Donation is processing. Transaction ID: {charge.Id}";
+                    return $"Additional action required to complete donation. PaymentIntent ID: {paymentIntent.Id}";
                 }
                 else
                 {
-                    _logger.LogWarning("Google Pay donation failed. Status: {Status}", charge.Status);
-                    return "Donation failed.";
+                    return $"Donation failed. PaymentIntent ID: {paymentIntent.Id}, Status: {paymentIntent.Status}";
                 }
             }
             catch (StripeException ex)
@@ -493,6 +494,7 @@ namespace Payment.BLL.Services.Payment
                 return $"Error processing donation: {ex.Message}";
             }
         }
+
 
         public async Task<string> CreateSepaDonationAsync(SepaDonationRequest request, string customerId)
         {
