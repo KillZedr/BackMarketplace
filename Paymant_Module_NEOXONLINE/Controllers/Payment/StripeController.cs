@@ -270,6 +270,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                     Console.WriteLine($"Charge refunded: {charge.Id}");
                     //todo add refund info to db 
                 }
+
                 else if (stripeEvent.Type == EventTypes.PaymentIntentSucceeded)
                 {
                     var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
@@ -289,6 +290,23 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                         await _unitOfWork.SaveShangesAsync();
 
                         Console.WriteLine("Donation completed.");
+                    }
+                    else if (transactionType == "GooglePay")
+                    {
+                        var transaction = new StripeTransaction
+                        {
+                            StripeSessionId = paymentIntent.Id,
+                            PaymentIntentId = paymentIntent.Id,
+                            Amount = paymentIntent.Amount / 100m,
+                            Currency = paymentIntent.Currency,
+                            PaymentMethod = "Google Pay",
+                            CreatedAt = DateTime.UtcNow,
+                            PaymentStatus = "succeeded"
+                        };
+                        _unitOfWork.GetRepository<StripeTransaction>().Create(transaction);
+                        await _unitOfWork.SaveShangesAsync();
+
+                        Console.WriteLine("Google Pay payment completed.");
                     }
                     else
                     {
