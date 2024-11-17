@@ -308,6 +308,23 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 
                         Console.WriteLine("Google Pay payment completed.");
                     }
+                    else if (transactionType == "GooglePayDonation")
+                    {
+                        var transaction = new StripeDonation
+                        {
+                            
+                            PaymentIntentId = paymentIntent.Id,
+                            Amount = paymentIntent.Amount / 100m,
+                            CustomerId = paymentIntent.CustomerId,
+                            Currency = paymentIntent.Currency,
+                            CreatedAt = DateTime.UtcNow,
+                            IsSuccessful = true
+                        };
+                        _unitOfWork.GetRepository<StripeDonation>().Create(transaction);
+                        await _unitOfWork.SaveShangesAsync();
+
+                        Console.WriteLine("Google Pay donation completed.");
+                    }
                     else
                     {
                         // Логика для других типов транзакций
