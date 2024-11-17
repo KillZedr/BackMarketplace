@@ -12,7 +12,7 @@ namespace Payment.Domain
         public string PaymentIntentId { get; set; }
         public string PaymentStatus { get; set; }
         public string Currency { get; set; }
-        public long Amount { get; set; }
+        public decimal Amount { get; set; }
         public string? CustomerId { get; set; }
         public string? PaymentMethod { get; set; }
         public string? InvoiceId { get; set; }
