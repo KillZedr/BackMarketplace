@@ -291,31 +291,56 @@ namespace Payment.BLL.Services.Payment
                     return "Invalid payment amount.";
                 }
 
-                var options = new ChargeCreateOptions
+                // Create a PaymentMethod using the Google Pay token
+                var paymentMethodOptions = new PaymentMethodCreateOptions
                 {
-                    Amount = (long)(basket.Amount * 100), // Convert amount to cents
-                    Currency = "eur",
-                    Source = googlePayToken,
-                    Description = $"Google Pay payment for Basket ID: {basket.BasketId} on {DateTime.UtcNow}"
+                    Type = "card",
+                    Card = new PaymentMethodCardOptions
+                    {
+                        Token = googlePayToken 
+                    }
                 };
 
-                var charge = await _chargeService.CreateAsync(options);
+                var paymentMethodService = new PaymentMethodService();
+                var paymentMethod = await paymentMethodService.CreateAsync(paymentMethodOptions);
 
-                // Check status of the charge and return the appropriate message
-                if (charge.Status == "succeeded")
+                //Create a PaymentIntent using the created PaymentMethod
+                var paymentIntentOptions = new PaymentIntentCreateOptions
+                {
+                    Amount = (long)(basket.Amount * 100), 
+                    Currency = "eur",
+                    PaymentMethod = paymentMethod.Id, 
+                    Description = $"Google Pay payment for Basket ID: {basket.BasketId} on {DateTime.UtcNow}",
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "TransactionType", "GooglePay" }
+                    },
+                    Confirm = true, // Automatically confirm the payment
+                    ReturnUrl = "https://docs.stripe.com", 
+                    AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+                    {
+                        Enabled = true,
+                    }
+                };
+
+                var paymentIntentService = new PaymentIntentService();
+                var paymentIntent = await paymentIntentService.CreateAsync(paymentIntentOptions);
+
+                // Check the status of the PaymentIntent and return the appropriate message
+                if (paymentIntent.Status == "succeeded")
                 {
                     _logger.LogInformation("Google Pay payment succeeded for Basket ID: {BasketId}", basket.BasketId);
-                    return $"Payment completed successfully. Transaction ID: {charge.Id}";
+                    return $"Payment completed successfully. Transaction ID: {paymentIntent.Id}";
                 }
-                else if (charge.Status == "pending" || charge.Status == "processing")
+                else if (paymentIntent.Status == "pending" || paymentIntent.Status == "processing")
                 {
                     _logger.LogInformation("Google Pay payment is processing for Basket ID: {BasketId}", basket.BasketId);
-                    return $"Payment is processing. Transaction ID: {charge.Id}, Status: {charge.Status}";
+                    return $"Payment is processing. Transaction ID: {paymentIntent.Id}, Status: {paymentIntent.Status}";
                 }
                 else
                 {
-                    _logger.LogWarning("Google Pay payment failed for Basket ID: {BasketId}, Status: {Status}", basket.BasketId, charge.Status);
-                    return $"Payment failed. Status: {charge.Status}";
+                    _logger.LogWarning("Google Pay payment failed for Basket ID: {BasketId}, Status: {Status}", basket.BasketId, paymentIntent.Status);
+                    return $"Payment failed. Status: {paymentIntent.Status}";
                 }
             }
             catch (StripeException ex)
@@ -397,7 +422,6 @@ namespace Payment.BLL.Services.Payment
             }
         }
 
-
         public async Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId)
         {
             try
@@ -430,16 +454,19 @@ namespace Payment.BLL.Services.Payment
                 }
 
                 // Создаем платеж, используя привязанный источник
+
+
                 var options = new ChargeCreateOptions
                 {
-                    Amount = (long)(amount * 100), // Amount in cents
+                    Amount = (long)(amount * 100),
                     Currency = currency,
-                    Customer = customerId, // Используем `customerId`, к которому привязан источник
+                    Customer = customerId,
                     Description = "Google Pay donation",
                     Metadata = new Dictionary<string, string>
-            {
-                { "DonationType", "GooglePay" }
-            }
+                    {
+                        { "DonationType", "GooglePay" },
+                        { "TransactionType", "GooglePay" }
+                    }
                 };
 
                 var charge = await _chargeService.CreateAsync(options);
@@ -466,12 +493,6 @@ namespace Payment.BLL.Services.Payment
                 return $"Error processing donation: {ex.Message}";
             }
         }
-
-
-
-
-
-
 
         public async Task<string> CreateSepaDonationAsync(SepaDonationRequest request, string customerId)
         {
@@ -548,15 +569,6 @@ namespace Payment.BLL.Services.Payment
                 return $"Error processing donation: {ex.Message}";
             }
         }
-
-
-
-
-
-
-
-
-
 
     }
 }
