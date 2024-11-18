@@ -8,6 +8,7 @@ using Payment.BLL.DTOs;
 using Payment.Domain;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
+using Payment.Domain.Stripe;
 using Stripe;
 using Stripe.Checkout;
 using Stripe.FinancialConnections;
@@ -382,5 +383,79 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return BadRequest();
             }
         }
+        [HttpPost("AddOrUpdatePaymentFee")]
+        public async Task<IActionResult> AddOrUpdatePaymentFee([FromBody] PaymentFee fee)
+        {
+            try
+            {
+                // Проверка входных данных
+                if (fee == null)
+                {
+                    return BadRequest(new { Error = "Payment fee data is required." });
+                }
+
+                // Валидируем и подготавливаем PaymentFee
+                fee = _stripeService.ValidateAndPreparePaymentFee(fee);
+
+                // Получаем репозиторий
+                var repository = _unitOfWork.GetRepository<PaymentFee>();
+
+                // Проверяем, существует ли уже такая запись
+                var existingFee = await repository.AsQueryable()
+                    .FirstOrDefaultAsync(f => f.PaymentMethod.ToLower() == fee.PaymentMethod.ToLower() &&
+                                              f.Currency.ToLower() == fee.Currency.ToLower());
+
+                if (existingFee != null)
+                {
+                    // Обновляем существующую запись
+                    existingFee.PercentageFee = fee.PercentageFee;
+                    existingFee.FixedFee = fee.FixedFee;
+                    existingFee.LastUpdated = fee.LastUpdated;
+
+                    repository.Update(existingFee);
+                    await _unitOfWork.SaveShangesAsync();
+
+                    return Ok(new { Message = $"Payment fee for method '{fee.PaymentMethod}' in currency '{fee.Currency}' updated successfully." });
+                }
+
+                // Добавляем новую запись
+                repository.Create(fee);
+                await _unitOfWork.SaveShangesAsync();
+
+                return Ok(new { Message = $"Payment fee for method '{fee.PaymentMethod}' in currency '{fee.Currency}' added successfully." });
+            }
+            catch (DbUpdateException dbEx) when (dbEx.InnerException?.Message.Contains("IX_PaymentMethod_Currency_Unique") == true)
+            {
+                // Конфликт уникального индекса
+                return Conflict(new { Error = "A payment fee with this method and currency already exists." });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Ошибка при работе с базой данных
+                return StatusCode(500, new
+                {
+                    Error = "An error occurred while saving data to the database.",
+                    Details = dbEx.Message,
+                    InnerException = dbEx.InnerException?.Message
+                });
+            }
+            catch (ArgumentException argEx)
+            {
+                // Ошибка валидации или подготовки данных
+                return BadRequest(new { Error = argEx.Message });
+            }
+            catch (Exception ex)
+            {
+                // Любая другая ошибка
+                return StatusCode(500, new
+                {
+                    Error = "An unexpected error occurred.",
+                    Details = ex.Message,
+                    InnerException = ex.InnerException?.Message
+                });
+            }
+        }
+
+
     }
 }
