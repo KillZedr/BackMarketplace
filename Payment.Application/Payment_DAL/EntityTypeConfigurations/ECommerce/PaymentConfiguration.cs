@@ -16,6 +16,9 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.ECommerce
             builder.HasOne(pay => pay.Basket)
                 .WithOne(b => b.PaymentBasket)
                 .HasForeignKey<PaymentBasket>(pay => pay.BasketId);
+             
+            builder.Property(pay => pay.UserEmail)
+                .HasMaxLength(255);
         }
     }
 }

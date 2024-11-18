@@ -65,7 +65,7 @@ namespace Paymant_Module_NEOXONLINE
 
             services.AddScoped<DbContext, Payment_DbContext>();
 
-            services.AddScoped<IUnitOfWork>(prov =>
+            services.AddScoped<IUnitOfWork>(prov => 
             {
                 var context = prov.GetRequiredService<DbContext>();
                 return new UnitOfWork(context);

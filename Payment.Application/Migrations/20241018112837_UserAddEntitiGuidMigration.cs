@@ -17,7 +17,7 @@ namespace Payment.Application.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
+        protected override void Down(MigrationBuilder migrationBuilder) 
         {
             migrationBuilder.RenameColumn(
                 name: "PhoneNumber",

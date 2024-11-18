@@ -61,10 +61,16 @@ namespace Paymant_Module_NEOXONLINE
 
             app.UseAuthorization();
 
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapFallbackToFile("htmlpage.html"); // ��������� index.html ��� ��������� URL
+            });
+             
 
             app.MapControllers();
 
-            app.Run();
+            app.Run(); 
         }
     }
 }
