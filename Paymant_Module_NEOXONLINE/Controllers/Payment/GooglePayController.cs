@@ -78,8 +78,6 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 
 
 
-
-
         [HttpPost("create-donation")]
         public async Task<IActionResult> CreateGooglePayDonation([FromQuery] decimal amount, [FromQuery] string currency, [FromQuery] string googlePayToken, [FromQuery] string customerId)
         {
@@ -120,12 +118,6 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return BadRequest(new { message = result });
             }
         }
-
-
-
-
-
-
 
     }
 }

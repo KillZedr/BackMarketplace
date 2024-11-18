@@ -513,9 +513,9 @@ namespace Payment.BLL.Services.Payment
                     Customer = customerId,
                     PaymentMethodTypes = new List<string> { "sepa_debit" },
                     Metadata = new Dictionary<string, string>
-            {
-                { "TransactionType", "SEPA_Donation" }
-            }
+                    {
+                        { "TransactionType", "SEPA_Donation" }
+                    }
                 };
 
                 var paymentIntentService = new PaymentIntentService();

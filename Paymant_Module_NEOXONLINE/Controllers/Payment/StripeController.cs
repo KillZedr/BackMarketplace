@@ -312,7 +312,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                     {
                         var transaction = new StripeDonation
                         {
-                            
+
                             PaymentIntentId = paymentIntent.Id,
                             Amount = paymentIntent.Amount / 100m,
                             CustomerId = paymentIntent.CustomerId,
@@ -342,7 +342,24 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                         _unitOfWork.GetRepository<StripeTransaction>().Create(transaction);
                         await _unitOfWork.SaveShangesAsync();
 
-                        Console.WriteLine("Google Pay payment completed.");
+                        Console.WriteLine("SEPA Pay payment completed.");
+                    }
+                    else if (transactionType == "SEPA_Donation")
+                    {
+                        var transaction = new StripeDonation
+                        {
+
+                            PaymentIntentId = paymentIntent.Id,
+                            Amount = paymentIntent.Amount / 100m,
+                            CustomerId = paymentIntent.CustomerId,
+                            Currency = paymentIntent.Currency,
+                            CreatedAt = DateTime.UtcNow,
+                            IsSuccessful = true
+                        };
+                        _unitOfWork.GetRepository<StripeDonation>().Create(transaction);
+                        await _unitOfWork.SaveShangesAsync();
+
+                        Console.WriteLine("SEPA Pay donation completed.");
                     }
 
                     else
