@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Payment.Application;
@@ -11,9 +12,11 @@ using Payment.Application;
 namespace Payment.Application.Migrations
 {
     [DbContext(typeof(Payment_DbContext))]
-    partial class Payment_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20241118121456_PaymentFee")]
+    partial class PaymentFee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -318,10 +321,6 @@ namespace Payment.Application.Migrations
                     b.HasIndex("PaymentMethod")
                         .IsUnique()
                         .HasDatabaseName("IX_PaymentMethod_Unique");
-
-                    b.HasIndex("PaymentMethod", "Currency")
-                        .IsUnique()
-                        .HasDatabaseName("IX_PaymentMethod_Currency_Unique");
 
                     b.ToTable("PaymentFees", (string)null);
                 });
