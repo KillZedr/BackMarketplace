@@ -8,7 +8,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
         // Метод для отображения страницы "htmlpage.html" с использованием абсолютного пути
         [HttpGet("index")]
         public IActionResult Index()
-        {
+        { 
             // Получение абсолютного пути к файлу "htmlpage.html"
             var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pages", "htmlpage.html");
 
