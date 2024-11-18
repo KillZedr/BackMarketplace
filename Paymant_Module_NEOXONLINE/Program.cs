@@ -64,7 +64,6 @@ namespace Paymant_Module_NEOXONLINE
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapFallbackToFile("htmlpage.html"); // ��������� index.html ��� ��������� URL
             });
              
 
