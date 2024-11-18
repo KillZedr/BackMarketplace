@@ -1,10 +1,7 @@
 
 using Microsoft.OpenApi.Models;
 using Payment.BLL;
-using Payment.BLL.Settings.NotificationSettings;
-using Payment.BLL.Settings.PayPalSetting;
 using Serilog;
-using System.Configuration;
 using System.Reflection;
 
 namespace Paymant_Module_NEOXONLINE
@@ -21,23 +18,9 @@ namespace Paymant_Module_NEOXONLINE
                 .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-            });
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAllOrigins", builder =>
-                {
-                    builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyMethod();
-                });
             });
             builder.Services.AddHttpClient();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.Configure<PayPalSettings>(builder.Configuration.GetSection("PayPal"));
-            builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
-
-
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -70,29 +53,14 @@ namespace Paymant_Module_NEOXONLINE
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-                    c.RoutePrefix = string.Empty; // Swagger at root
-                });
             }
 
-
-
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseCors("AllowAllOrigins"); // Включаем CORS
-            app.UseRouting();
+
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapFallbackToFile("htmlpage.html"); // Загружает index.html для корневого URL
-            });
 
             app.MapControllers();
 

@@ -13,10 +13,9 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.ECommerce
     {
         public void Configure(EntityTypeBuilder<Basket> builder)
         {
-          
-            builder.HasOne(b => b.User).WithMany(u => u.Basket).HasForeignKey(b => b.UserId);
-            
-          
+            /*builder.HasOne<PaymentBasket>().WithOne(pay => pay.Basket);*/
+            builder.HasOne(b => b.User).WithMany(b => b.Basket);
+            /*builder.HasMany<ProductInBasket>().WithOne(pib => pib.Basket);*/
         }
     }
 }

@@ -11,8 +11,7 @@ namespace Payment.Domain.ECommerce
     {
         
         public virtual PaymentBasket? PaymentBasket { get; set; }
-        public Guid UserId { get; set; }
-        public required User User { get; set; } 
+        public virtual  User User { get; set; } = null!;
         public virtual  IEnumerable<ProductInBasket> ProductInBasket { get; set; } = new List<ProductInBasket>();
     }
 }

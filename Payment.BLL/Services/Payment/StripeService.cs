@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
 using Payment.BLL.Services.PayProduct;
 using Payment.Domain;
-using Payment.Domain.ECommerce;
 using Payment.Domain.Identity;
 using Stripe;
 using Stripe.Checkout;
@@ -27,11 +25,8 @@ namespace Payment.BLL.Services.Payment
         private readonly CustomerService _customerService;
         private readonly RefundService _refundService;
         private readonly PaymentIntentService _paymentIntentService;
-        private readonly ChargeService _chargeService;
-        private readonly ILogger<StripeService> _logger;
 
-
-        public StripeService(ILogger<StripeService> logger)
+        public StripeService()
         {
             _productService = new Stripe.ProductService();
             _priceService = new PriceService();
@@ -39,8 +34,6 @@ namespace Payment.BLL.Services.Payment
             _customerService = new CustomerService();
             _refundService = new RefundService();
             _paymentIntentService = new PaymentIntentService();
-            _chargeService = new ChargeService();
-            _logger = logger;
         }
 
         public async Task<StripeList<Product>> GetAllStripeProductsAsync()
@@ -215,14 +208,14 @@ namespace Payment.BLL.Services.Payment
             return customer;
         }
 
-        public async Task<string> CreateRefundAsync(string paymentIntentId, long amount, string reason)
+        public async Task<string> CreateRefundAsync(string paymentIntentId, decimal amount, string reason)
         {
             try
             {
                 var refundOptions = new RefundCreateOptions
                 {
                     PaymentIntent = paymentIntentId,
-                    Amount = amount, // Сумма возврата в центах (optional, для частичного возврата)
+                    Amount = (long)(amount*100), // Сумма возврата в центах (optional, для частичного возврата)
                     Reason = reason ?? "requested_by_customer" //"duplicate", "fraudulent", "requested_by_customer"
                 };
 
@@ -276,265 +269,5 @@ namespace Payment.BLL.Services.Payment
 
             return intent.ClientSecret;
         }
-
-        public async Task<string> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(googlePayToken))
-                {
-                    return "Google Pay token is missing.";
-                }
-
-                if (basket.Amount <= 0)
-                {
-                    return "Invalid payment amount.";
-                }
-
-                var options = new ChargeCreateOptions
-                {
-                    Amount = (long)(basket.Amount * 100), // Convert amount to cents
-                    Currency = "eur",
-                    Source = googlePayToken,
-                    Description = $"Google Pay payment for Basket ID: {basket.BasketId} on {DateTime.UtcNow}"
-                };
-
-                var charge = await _chargeService.CreateAsync(options);
-
-                // Check status of the charge and return the appropriate message
-                if (charge.Status == "succeeded")
-                {
-                    _logger.LogInformation("Google Pay payment succeeded for Basket ID: {BasketId}", basket.BasketId);
-                    return $"Payment completed successfully. Transaction ID: {charge.Id}";
-                }
-                else if (charge.Status == "pending" || charge.Status == "processing")
-                {
-                    _logger.LogInformation("Google Pay payment is processing for Basket ID: {BasketId}", basket.BasketId);
-                    return $"Payment is processing. Transaction ID: {charge.Id}, Status: {charge.Status}";
-                }
-                else
-                {
-                    _logger.LogWarning("Google Pay payment failed for Basket ID: {BasketId}, Status: {Status}", basket.BasketId, charge.Status);
-                    return $"Payment failed. Status: {charge.Status}";
-                }
-            }
-            catch (StripeException ex)
-            {
-                _logger.LogError(ex, "Error processing Google Pay payment for Basket ID: {BasketId}", basket.BasketId);
-                return $"Error processing payment: {ex.Message}";
-            }
-        }
-
-        public async Task<string> ProcessSepaPaymentAsync(PaymentBasket basket, SepaPaymentRequest sepaRequest)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(sepaRequest.Iban))
-                {
-                    throw new ArgumentException("IBAN is missing.");
-                }
-
-                var options = new PaymentIntentCreateOptions
-                {
-                    Amount = (long)(basket.Amount * 100),
-                    Currency = "eur",
-                    PaymentMethodTypes = new List<string> { "sepa_debit" }
-                };
-
-                var paymentIntent = await _paymentIntentService.CreateAsync(options);
-
-                var confirmOptions = new PaymentIntentConfirmOptions
-                {
-                    PaymentMethodData = new PaymentIntentPaymentMethodDataOptions
-                    {
-                        Type = "sepa_debit",
-                        SepaDebit = new PaymentIntentPaymentMethodDataSepaDebitOptions
-                        {
-                            Iban = sepaRequest.Iban
-                        },
-                        BillingDetails = new PaymentIntentPaymentMethodDataBillingDetailsOptions
-                        {
-                            Email = basket.Basket.User.Email,
-                            Name = basket.Basket.User.FirstName
-                        }
-                    },
-                    MandateData = new PaymentIntentMandateDataOptions
-                    {
-                        CustomerAcceptance = new PaymentIntentMandateDataCustomerAcceptanceOptions
-                        {
-                            Type = "online",
-                            Online = new PaymentIntentMandateDataCustomerAcceptanceOnlineOptions
-                            {
-                                IpAddress = sepaRequest.IpAddress,
-                                UserAgent = sepaRequest.UserAgent
-                            }
-                        }
-                    }
-                };
-
-                var confirmedPaymentIntent = await _paymentIntentService.ConfirmAsync(paymentIntent.Id, confirmOptions);
-
-                if (confirmedPaymentIntent.Status == "succeeded")
-                {
-                    _logger.LogInformation("SEPA payment succeeded for Basket ID: {BasketId}", basket.BasketId);
-                    return $"Payment completed successfully. Transaction ID: {confirmedPaymentIntent.Id}";
-                }
-                else if (confirmedPaymentIntent.Status == "processing")
-                {
-                    _logger.LogInformation("SEPA payment is processing for Basket ID: {BasketId}", basket.BasketId);
-                    return $"Payment is processing. Transaction ID: {confirmedPaymentIntent.Id}";
-                }
-                else
-                {
-                    _logger.LogWarning("SEPA payment failed for Basket ID: {BasketId}, Status: {Status}", basket.BasketId, confirmedPaymentIntent.Status);
-                    return "Payment failed.";
-                }
-            }
-            catch (StripeException ex)
-            {
-                _logger.LogError(ex, "Error processing SEPA payment for Basket ID: {BasketId}", basket.BasketId);
-                return $"Error processing payment: {ex.Message}";
-            }
-        }
-
-        public async Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken)
-        {
-            try
-            {
-                if (amount <= 0)
-                {
-                    return "Donation amount must be greater than zero.";
-                }
-
-                if (string.IsNullOrEmpty(googlePayToken))
-                {
-                    return "Google Pay token is missing.";
-                }
-
-                var options = new ChargeCreateOptions
-                {
-                    Amount = (long)(amount * 100), // Amount in cents
-                    Currency = currency,
-                    Source = googlePayToken,
-                    Description = "Google Pay donation",
-                    Metadata = new Dictionary<string, string>
-            {
-                { "DonationType", "GooglePay" }
-            }
-                };
-
-                var charge = await _chargeService.CreateAsync(options);
-
-                if (charge.Status == "succeeded")
-                {
-                    _logger.LogInformation("Google Pay donation succeeded. Transaction ID: {TransactionId}", charge.Id);
-                    return $"Donation completed successfully. Transaction ID: {charge.Id}";
-                }
-                else if (charge.Status == "pending" || charge.Status == "processing")
-                {
-                    _logger.LogInformation("Google Pay donation is processing. Transaction ID: {TransactionId}", charge.Id);
-                    return $"Donation is processing. Transaction ID: {charge.Id}";
-                }
-                else
-                {
-                    _logger.LogWarning("Google Pay donation failed. Status: {Status}", charge.Status);
-                    return "Donation failed.";
-                }
-            }
-            catch (StripeException ex)
-            {
-                _logger.LogError(ex, "Error processing Google Pay donation.");
-                return $"Error processing donation: {ex.Message}";
-            }
-        }
-
-        public async Task<string> CreateSepaDonationAsync(decimal amount, string currency, SepaPaymentRequest sepaRequest, UserDto user)
-        {
-            try
-            {
-                if (amount <= 0)
-                {
-                    return "Donation amount must be greater than zero.";
-                }
-
-                if (string.IsNullOrEmpty(sepaRequest.Iban))
-                {
-                    return "IBAN is missing.";
-                }
-
-                var options = new PaymentIntentCreateOptions
-                {
-                    Amount = (long)(amount * 100), // Convert amount to cents
-                    Currency = currency,
-                    PaymentMethodTypes = new List<string> { "sepa_debit" },
-                    Metadata = new Dictionary<string, string>
-                {
-                { "DonationType", "SEPA" }
-                }
-                };
-
-                var paymentIntent = await _paymentIntentService.CreateAsync(options);
-
-                var confirmOptions = new PaymentIntentConfirmOptions
-                {
-                    PaymentMethodData = new PaymentIntentPaymentMethodDataOptions
-                    {
-                        Type = "sepa_debit",
-                        SepaDebit = new PaymentIntentPaymentMethodDataSepaDebitOptions
-                        {
-                            Iban = sepaRequest.Iban
-                        },
-                        BillingDetails = new PaymentIntentPaymentMethodDataBillingDetailsOptions
-                        {
-                            Email = user.Email,
-                            Name = user.Name,
-                            Address = new AddressOptions
-                            {
-                                Line1 = user.Address,
-                                City = user.City,
-                                Country = user.Сountry
-                            }
-                        }
-                    },
-                    MandateData = new PaymentIntentMandateDataOptions
-                    {
-                        CustomerAcceptance = new PaymentIntentMandateDataCustomerAcceptanceOptions
-                        {
-                            Type = "online",
-                            Online = new PaymentIntentMandateDataCustomerAcceptanceOnlineOptions
-                            {
-                                IpAddress = sepaRequest.IpAddress,
-                                UserAgent = sepaRequest.UserAgent
-                            }
-                        }
-                    }
-                };
-
-                var confirmedPaymentIntent = await _paymentIntentService.ConfirmAsync(paymentIntent.Id, confirmOptions);
-
-                if (confirmedPaymentIntent.Status == "succeeded")
-                {
-                    _logger.LogInformation("SEPA donation succeeded. Transaction ID: {TransactionId}", confirmedPaymentIntent.Id);
-                    return $"Donation completed successfully. Transaction ID: {confirmedPaymentIntent.Id}";
-                }
-                else if (confirmedPaymentIntent.Status == "processing")
-                {
-                    _logger.LogInformation("SEPA donation is processing. Transaction ID: {TransactionId}", confirmedPaymentIntent.Id);
-                    return $"Donation is processing. Transaction ID: {confirmedPaymentIntent.Id}";
-                }
-                else
-                {
-                    _logger.LogWarning("SEPA donation failed. Status: {Status}", confirmedPaymentIntent.Status);
-                    return "Donation failed.";
-                }
-            }
-            catch (StripeException ex)
-            {
-                _logger.LogError(ex, "Error processing SEPA donation.");
-                return $"Error processing donation: {ex.Message}";
-            }
-        }
-
-
     }
 }
