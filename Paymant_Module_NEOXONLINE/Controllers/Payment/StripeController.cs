@@ -316,6 +316,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                             PaymentIntentId = paymentIntent.Id,
                             Amount = paymentIntent.Amount / 100m,
                             CustomerId = paymentIntent.CustomerId,
+                            PaymentMethod = "Google Pay",
                             Currency = paymentIntent.Currency,
                             CreatedAt = DateTime.UtcNow,
                             IsSuccessful = true
@@ -352,6 +353,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                             PaymentIntentId = paymentIntent.Id,
                             Amount = paymentIntent.Amount / 100m,
                             CustomerId = paymentIntent.CustomerId,
+                            PaymentMethod = "SEPA Debit",
                             Currency = paymentIntent.Currency,
                             CreatedAt = DateTime.UtcNow,
                             IsSuccessful = true

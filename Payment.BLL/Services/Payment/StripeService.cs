@@ -497,8 +497,7 @@ namespace Payment.BLL.Services.Payment
                 return $"Error processing donation: {ex.Message}";
             }
         }
-
-
+        
         public async Task<string> CreateSepaDonationAsync(SepaDonationRequest request, string customerId)
         {
             try
