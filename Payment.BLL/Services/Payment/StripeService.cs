@@ -27,7 +27,6 @@ namespace Payment.BLL.Services.Payment
         private readonly CustomerService _customerService;
         private readonly RefundService _refundService;
         private readonly PaymentIntentService _paymentIntentService;
-        private readonly ChargeService _chargeService;
         private readonly ILogger<StripeService> _logger;
 
 
@@ -39,7 +38,6 @@ namespace Payment.BLL.Services.Payment
             _customerService = new CustomerService();
             _refundService = new RefundService();
             _paymentIntentService = new PaymentIntentService();
-            _chargeService = new ChargeService();
             _logger = logger;
         }
 
@@ -363,7 +361,12 @@ namespace Payment.BLL.Services.Payment
                 {
                     Amount = (long)(basket.Amount * 100),
                     Currency = "eur",
-                    PaymentMethodTypes = new List<string> { "sepa_debit" }
+                    PaymentMethodTypes = new List<string> { "sepa_debit" },
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "TransactionType", "SEPAPay" }
+                    },
+
                 };
 
                 var paymentIntent = await _paymentIntentService.CreateAsync(options);
