@@ -24,7 +24,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
         private readonly IEmailNotificationService _emailNotificationService;
         public PayPalController(IPayPalService payPalService, ILogger<PayPalController> logger, IUnitOfWork unitOfWork, IEmailNotificationService emailNotificationService)
         {
-            _payPalService = payPalService;
+            _payPalService = payPalService; 
             _logger = logger;
             _unitOfWork = unitOfWork;
             _emailNotificationService = emailNotificationService;

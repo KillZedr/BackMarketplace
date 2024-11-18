@@ -13,5 +13,5 @@ namespace Payment.BLL.Services.Notifications.HubPush
         {
             await Clients.User(userId).SendAsync("ReceiveNotification", message);
         }
-    }
+    } 
 }

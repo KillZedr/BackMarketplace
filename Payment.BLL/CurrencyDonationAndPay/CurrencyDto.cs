@@ -7,6 +7,6 @@
         GBP,
         RUB
 
-        // Add auther currency
+        // Add auther currency 
     }
 }

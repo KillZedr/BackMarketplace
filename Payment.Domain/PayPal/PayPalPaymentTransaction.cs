@@ -21,7 +21,7 @@ namespace Payment.Domain.PayPal
         public required string PayerId { get; set; } // ID плательщика
 
         public required  string SaleId { get; set; } // ID продажи для возвратов
-
+         
         public required string Status { get; set; } // Статус платежа (например, Completed, Refunded)
 
         public required decimal Amount { get; set; } // Сумма транзакции

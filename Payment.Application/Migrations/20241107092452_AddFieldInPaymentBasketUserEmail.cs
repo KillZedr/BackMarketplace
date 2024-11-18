@@ -13,7 +13,7 @@ namespace Payment.Application.Migrations
 
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc /> 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
 

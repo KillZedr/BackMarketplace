@@ -9,7 +9,7 @@ namespace Payment.BLL.Services.PayPal.EntityRefould
     public class RefundResult
     {
         public bool IsSuccess { get; set; }
-        public string RefundTransactionId { get; set; }
+        public string RefundTransactionId { get; set; } 
         public string RefundAmount { get; set; }
         public string Currency { get; set; }
     }

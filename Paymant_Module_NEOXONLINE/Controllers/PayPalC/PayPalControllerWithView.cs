@@ -25,7 +25,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
         // Метод для получения содержимого HTML-страницы в формате текста
         [HttpGet("get-html")]
         public async Task<IActionResult> GetHtmlPage()
-        {
+        { 
             // Получение абсолютного пути к файлу "htmlpage.html"
             var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pages", "htmlpage.html");
 

@@ -20,7 +20,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         }
 
 
-        [HttpGet("AllPaymentBasket")]
+        [HttpGet("AllPaymentBasket")] 
 
         public async Task<IActionResult> GetAllPaymentBasket()
         {

@@ -16,7 +16,7 @@ namespace Payment.BLL.Services.PayPal
             _commissionRates = new Dictionary<string, (decimal Percentage, decimal FixedFee)>
         {
             { "USD", (0.036m, 0.30m) }, // 3,6% + $0.30
-            { "EUR", (0.036m, 0.30m) }, // 3,6% + €0.30
+            { "EUR", (0.036m, 0.30m) }, // 3,6% + €0.30 
             { "GBP", (0.03m, 0.20m) }, // 3% + £0.20
             { "AUD", (0.03m, 0.30m) }, // 3% + AU$0.30
             { "CAD", (0.03m, 0.30m) }, // 3% + CA$0.30

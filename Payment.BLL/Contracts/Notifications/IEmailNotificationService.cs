@@ -10,7 +10,7 @@ namespace Payment.BLL.Contracts.Notifications
     {
         Task SendTestSuccessNotificationAsync(string toEmail, DateTime creationDate, string approvalUrl);
 
-        Task SendErrorNotificationAsync(string toEmail, string paymentId, string errorMessage);
+        Task SendErrorNotificationAsync(string toEmail, string paymentId, string errorMessage); 
 
         Task SendInsufficientFundsNotificationAsync(string toEmail, string paymentId);
 

@@ -16,7 +16,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.CurrancyLayer
         }
         public class Currency
         {
-            public string Source { get; set; }
+            public string Source { get; set; } 
             public Dictionary<string, decimal> Quotes { get; set; }
         }
 

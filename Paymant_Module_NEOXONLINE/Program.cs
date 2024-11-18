@@ -66,10 +66,10 @@ namespace Paymant_Module_NEOXONLINE
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("htmlpage.html"); // Загружает index.html для корневого URL
             });
-
+             
             app.MapControllers();
 
-            app.Run();
+            app.Run(); 
         }
     }
 }

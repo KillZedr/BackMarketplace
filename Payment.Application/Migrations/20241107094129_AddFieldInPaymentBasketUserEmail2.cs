@@ -17,7 +17,7 @@ namespace Payment.Application.Migrations
                 nullable: true);
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc /> 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(

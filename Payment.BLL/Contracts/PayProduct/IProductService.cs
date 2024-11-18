@@ -13,5 +13,5 @@ namespace Payment.BLL.Contracts.PayProduct
     public interface IProductService : IService
     {
         Task<List<Product>> GetProductsFromPriceToPrice(decimal fromAmmount, decimal toAmmount);
-    }
+    } 
 }

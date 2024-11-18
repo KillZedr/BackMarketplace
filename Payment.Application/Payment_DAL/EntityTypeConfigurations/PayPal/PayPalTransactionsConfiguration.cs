@@ -19,7 +19,7 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.PayPal
 
             builder.Property(t => t.PaymentId)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(50); 
 
             builder.Property(t => t.PayerId)
                 .IsRequired()

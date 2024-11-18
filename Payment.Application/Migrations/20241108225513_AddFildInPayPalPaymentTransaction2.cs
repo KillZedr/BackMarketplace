@@ -15,7 +15,7 @@ namespace Payment.Application.Migrations
                 table: "PayPalPaymentTransaction",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0); 
         }
 
         /// <inheritdoc />
