@@ -6,6 +6,7 @@ using Payment.BLL.Services.PayProduct;
 using Payment.Domain;
 using Payment.Domain.ECommerce;
 using Payment.Domain.Identity;
+using Payment.Domain.Stripe;
 using Stripe;
 using Stripe.Checkout;
 using Stripe.Forwarding;
@@ -574,5 +575,31 @@ namespace Payment.BLL.Services.Payment
             }
         }
 
+        public PaymentFee ValidateAndPreparePaymentFee(PaymentFee fee)
+        {
+            // Проверка входных данных
+            if (string.IsNullOrEmpty(fee.PaymentMethod))
+            {
+                throw new ArgumentException("Payment method is required.");
+            }
+
+            if (fee.PercentageFee < 0 || fee.FixedFee < 0)
+            {
+                throw new ArgumentException("Fees cannot be negative.");
+            }
+
+            if (string.IsNullOrEmpty(fee.Currency) || fee.Currency.Length != 3)
+            {
+                throw new ArgumentException("Invalid currency code.");
+            }
+
+            // Приводим валюту к верхнему регистру
+            fee.Currency = fee.Currency.ToUpper();
+
+            // Обновляем дату последнего изменения
+            fee.LastUpdated = DateTime.UtcNow;
+
+            return fee;
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Payment.BLL.DTOs;
 using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
+using Payment.Domain.Stripe;
 using Stripe;
 using System;
 using System.Collections.Generic;
@@ -35,5 +36,6 @@ namespace Payment.BLL.Contracts.Payment
         Task<string> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken);
         Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId);
         Task<string> CreateSepaDonationAsync(SepaDonationRequest request, string customerId);
+        PaymentFee ValidateAndPreparePaymentFee(PaymentFee fee);
     }
 }
