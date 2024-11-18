@@ -297,7 +297,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                         {
                             StripeSessionId = paymentIntent.Id,
                             PaymentIntentId = paymentIntent.Id,
-                            Amount = paymentIntent.Amount / 100m,
+                            Amount = (long)(paymentIntent.Amount / 100m),
                             Currency = paymentIntent.Currency,
                             PaymentMethod = "Google Pay",
                             CreatedAt = DateTime.UtcNow,
@@ -325,6 +325,26 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 
                         Console.WriteLine("Google Pay donation completed.");
                     }
+                    else if (transactionType == "SEPAPay")
+                    {
+                        var transaction = new StripeTransaction
+                        {
+                            StripeSessionId = stripeEvent.Id,
+                            PaymentIntentId = paymentIntent.Id,
+                            Amount = (long)(paymentIntent.Amount / 100m),
+                            Currency = paymentIntent.Currency,
+                            PaymentMethod = "SEPA Debit",
+                            PaymentStatus = paymentIntent.Status,
+                            CreatedAt = DateTime.UtcNow,
+                            CustomerId = paymentIntent.CustomerId,
+                            ClientIp = paymentIntent.Metadata.ContainsKey("IpAddress") ? paymentIntent.Metadata["IpAddress"] : null
+                        };
+                        _unitOfWork.GetRepository<StripeTransaction>().Create(transaction);
+                        await _unitOfWork.SaveShangesAsync();
+
+                        Console.WriteLine("Google Pay payment completed.");
+                    }
+
                     else
                     {
                         // Логика для других типов транзакций
