@@ -60,10 +60,11 @@ namespace Paymant_Module_NEOXONLINE
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
+            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToFile("htmlpage.html"); // Загружает index.html для корневого URL
             });
              
 
