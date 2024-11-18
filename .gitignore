@@ -376,3 +376,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Payment.Application/bin/Debug/net8.0/Payment.Application.dll
