@@ -10,9 +10,9 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.Stripe
         {
             // Указываем имя таблицы
             builder.ToTable("PaymentFees");
-
-            // Устанавливаем первичный ключ
             builder.HasKey(p => p.Id);
+            builder.Property(p => p.Id)
+                .ValueGeneratedOnAdd();
 
             // Уникальный составной индекс для PaymentMethod и Currency
             builder.HasIndex(p => new { p.PaymentMethod, p.Currency })
@@ -44,7 +44,7 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.Stripe
             // Настройки свойства LastUpdated (с учетом timestamp with time zone)
             builder.Property(p => p.LastUpdated)
                 .IsRequired()
-                .HasColumnType("timestamptz"); // timestamp with time zone
+                .HasColumnType("timestamptz");
         }
     }
 }
