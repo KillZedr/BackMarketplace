@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
+using Microsoft.EntityFrameworkCore;
 using Payment.BLL.Services.PayProduct;
 using Payment.Domain;
 using Payment.Domain.DTOs;
 using Payment.Domain.Identity;
+using Payment.Domain.Stripe;
 using Stripe;
 using Stripe.Checkout;
 using Stripe.Forwarding;
@@ -201,7 +203,7 @@ namespace Payment.BLL.Services.Payment
                 {
                     Line1 = userDto.Address,
                     City = userDto.City,
-                    Country = userDto.Сountry
+                    Country = userDto.Country
                 },                
             };
             var customer = _customerService.Create(customerOptions);

@@ -280,6 +280,42 @@ namespace Payment.Application.Migrations
                     b.ToTable("Product");
                 });
 
+            modelBuilder.Entity("Payment.Domain.Stripe.PaymentFee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<decimal>("FixedFee")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamptz");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("PercentageFee")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentMethod", "Currency")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PaymentMethod_Currency_Unique");
+
+                    b.ToTable("PaymentFees", (string)null);
+                });
+
             modelBuilder.Entity("Payment.Domain.StripeDonation", b =>
                 {
                     b.Property<int>("Id")
@@ -307,6 +343,9 @@ namespace Payment.Application.Migrations
 
                     b.Property<string>("PaymentIntentId")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PaymentMethod")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

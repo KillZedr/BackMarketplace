@@ -9,6 +9,7 @@ using Payment.Domain;
 using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
+using Payment.Domain.Stripe;
 using Stripe;
 using Stripe.Checkout;
 using Stripe.FinancialConnections;
@@ -351,6 +352,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                     Console.WriteLine($"Charge refunded: {charge.Id}");
                     //todo add refund info to db 
                 }
+
                 else if (stripeEvent.Type == EventTypes.PaymentIntentSucceeded)
                 {
                     var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
@@ -371,6 +373,79 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 
                         Console.WriteLine("Donation completed.");
                     }
+                    else if (transactionType == "GooglePay")
+                    {
+                        var transaction = new StripeTransaction
+                        {
+                            StripeSessionId = paymentIntent.Id,
+                            PaymentIntentId = paymentIntent.Id,
+                            Amount = (long)(paymentIntent.Amount / 100m),
+                            Currency = paymentIntent.Currency,
+                            PaymentMethod = "Google Pay",
+                            CreatedAt = DateTime.UtcNow,
+                            PaymentStatus = "succeeded"
+                        };
+                        _unitOfWork.GetRepository<StripeTransaction>().Create(transaction);
+                        await _unitOfWork.SaveShangesAsync();
+
+                        Console.WriteLine("Google Pay payment completed.");
+                    }
+                    else if (transactionType == "GooglePayDonation")
+                    {
+                        var transaction = new StripeDonation
+                        {
+
+                            PaymentIntentId = paymentIntent.Id,
+                            Amount = paymentIntent.Amount / 100m,
+                            CustomerId = paymentIntent.CustomerId,
+                            PaymentMethod = "Google Pay",
+                            Currency = paymentIntent.Currency,
+                            CreatedAt = DateTime.UtcNow,
+                            IsSuccessful = true
+                        };
+                        _unitOfWork.GetRepository<StripeDonation>().Create(transaction);
+                        await _unitOfWork.SaveShangesAsync();
+
+                        Console.WriteLine("Google Pay donation completed.");
+                    }
+                    else if (transactionType == "SEPAPay")
+                    {
+                        var transaction = new StripeTransaction
+                        {
+                            StripeSessionId = stripeEvent.Id,
+                            PaymentIntentId = paymentIntent.Id,
+                            Amount = (long)(paymentIntent.Amount / 100m),
+                            Currency = paymentIntent.Currency,
+                            PaymentMethod = "SEPA Debit",
+                            PaymentStatus = paymentIntent.Status,
+                            CreatedAt = DateTime.UtcNow,
+                            CustomerId = paymentIntent.CustomerId,
+                            ClientIp = paymentIntent.Metadata.ContainsKey("IpAddress") ? paymentIntent.Metadata["IpAddress"] : null
+                        };
+                        _unitOfWork.GetRepository<StripeTransaction>().Create(transaction);
+                        await _unitOfWork.SaveShangesAsync();
+
+                        Console.WriteLine("SEPA Pay payment completed.");
+                    }
+                    else if (transactionType == "SEPA_Donation")
+                    {
+                        var transaction = new StripeDonation
+                        {
+
+                            PaymentIntentId = paymentIntent.Id,
+                            Amount = paymentIntent.Amount / 100m,
+                            CustomerId = paymentIntent.CustomerId,
+                            PaymentMethod = "SEPA Debit",
+                            Currency = paymentIntent.Currency,
+                            CreatedAt = DateTime.UtcNow,
+                            IsSuccessful = true
+                        };
+                        _unitOfWork.GetRepository<StripeDonation>().Create(transaction);
+                        await _unitOfWork.SaveShangesAsync();
+
+                        Console.WriteLine("SEPA Pay donation completed.");
+                    }
+
                     else
                     {
                         // Логика для других типов транзакций
@@ -389,5 +464,75 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return BadRequest();
             }
         }
+
+        [HttpPost("AddOrUpdatePaymentFee")]
+        public async Task<IActionResult> AddOrUpdatePaymentFee([FromBody] PaymentFeeDto feeDto)
+        {
+            try
+            {
+                if (feeDto == null)
+                {
+                    return BadRequest(new { Error = "Payment fee data is required." });
+                }
+
+                // Создаём объект PaymentFee на основе DTO
+                var fee = new PaymentFee
+                {
+                    PaymentMethod = feeDto.PaymentMethod,
+                    PercentageFee = feeDto.PercentageFee,
+                    FixedFee = feeDto.FixedFee,
+                    Currency = feeDto.Currency.ToUpper(),
+                    LastUpdated = DateTime.UtcNow
+                };
+
+                // Валидируем данные
+                fee = _stripeService.ValidateAndPreparePaymentFee(fee);
+
+                // Получаем репозиторий
+                var repository = _unitOfWork.GetRepository<PaymentFee>();
+
+                // Проверяем, существует ли уже такая запись
+                var existingFee = await repository.AsQueryable()
+                    .FirstOrDefaultAsync(f => f.PaymentMethod.ToLower() == fee.PaymentMethod.ToLower() &&
+                                              f.Currency.ToLower() == fee.Currency.ToLower());
+
+                if (existingFee != null)
+                {
+                    // Обновляем существующую запись
+                    existingFee.PercentageFee = fee.PercentageFee;
+                    existingFee.FixedFee = fee.FixedFee;
+
+                    // Обновляем LastUpdated для существующей записи
+                    existingFee.LastUpdated = DateTime.UtcNow;
+
+                    repository.Update(existingFee);
+                    await _unitOfWork.SaveShangesAsync();
+
+                    return Ok(new { Message = $"Payment fee for method '{fee.PaymentMethod}' in currency '{fee.Currency}' updated successfully." });
+                }
+
+                // Добавляем новую запись
+                repository.Create(fee);
+                await _unitOfWork.SaveShangesAsync();
+
+                return Ok(new { Message = $"Payment fee for method '{fee.PaymentMethod}' in currency '{fee.Currency}' added successfully." });
+            }
+            catch (DbUpdateException dbEx) when (dbEx.InnerException?.Message.Contains("IX_PaymentMethod_Currency_Unique") == true)
+            {
+                return Conflict(new { Error = "A payment fee with this method and currency already exists." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Error = "An unexpected error occurred.",
+                    Details = ex.Message,
+                    InnerException = ex.InnerException?.Message
+                });
+            }
+        }
+
+
+
     }
 }

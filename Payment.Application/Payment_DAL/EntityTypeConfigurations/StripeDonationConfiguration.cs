@@ -32,6 +32,8 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations
 
             builder.Property(d => d.IsSuccessful)
                 .IsRequired();
+            builder.Property(d => d.PaymentMethod)
+                .IsRequired(false);
         }
     }
 }
