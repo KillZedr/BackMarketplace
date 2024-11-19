@@ -8,15 +8,17 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
 
-namespace Paymant_Module_NEOXONLINE.Controllers.Payment
+namespace Paymant_Module_NEOXONLINE.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class SepaController : ControllerBase
     {
-        [HttpGet("GetInfo")]
+        private readonly IStripeService _stripeService;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<SepaController> _logger;
 
-        public async Task<IActionResult> Get()
+        public SepaController(IStripeService stripeService, IUnitOfWork unitOfWork, ILogger<SepaController> logger)
         {
             _stripeService = stripeService;
             _unitOfWork = unitOfWork;
@@ -24,18 +26,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         }
 
         [HttpPost("sepa")]
-        public async Task<IActionResult> ProcessSepaPayment([FromBody] SepaPaymentRequest sepaRequest, [FromQuery] int basketId)
+        public async Task<IActionResult> ProcessSepaPayment([FromForm] SepaPaymentRequestDto sepaRequest, [FromQuery] int basketId)
         {
-
+          
             var basket = _unitOfWork.GetRepository<PaymentBasket>()
                 .AsQueryable()
-                .Include(pb => pb.Basket)  
-                .ThenInclude(b => b.User)  
+                .Include(pb => pb.Basket)
+                .ThenInclude(b => b.User)
                 .FirstOrDefault(pb => pb.Id == basketId);
-
-
-            
-
             if (basket == null)
             {
                 return NotFound(new { message = $"Basket with ID {basketId} not found." });
@@ -46,25 +44,39 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return BadRequest(new { message = "Invalid basket data or missing user information." });
             }
 
-            var resultMessage = await _stripeService.ProcessSepaPaymentAsync(basket, sepaRequest);
+            // Обрабатываем платеж
+            var paymentResult = await _stripeService.ProcessSepaPaymentAsync(basket, sepaRequest);
 
-            if (resultMessage.Contains("Payment completed successfully"))
+            if (paymentResult.Success)
             {
-                return Ok(new { success = true, message = resultMessage });
+                return Ok(new
+                {
+                    success = true,
+                    message = paymentResult.Message,
+                    transactionId = paymentResult.TransactionId,
+                    receiptUrl = paymentResult.ReceiptUrl
+                });
             }
-            else if (resultMessage.Contains("processing"))
+            else if (paymentResult.Message.Contains("processing", StringComparison.OrdinalIgnoreCase))
             {
-                return Accepted(new { success = true, message = resultMessage });
+                return Accepted(new
+                {
+                    success = true,
+                    message = paymentResult.Message,
+                    transactionId = paymentResult.TransactionId,
+                    receiptUrl = paymentResult.ReceiptUrl
+                });
             }
             else
             {
                 _logger.LogError("Failed to process SEPA payment for basket ID: {BasketId}", basketId);
-                return BadRequest(new { success = false, message = resultMessage });
+                return BadRequest(new { success = false, message = paymentResult.Message });
             }
         }
 
+
         [HttpPost("create-donation")]
-        public async Task<IActionResult> CreateSepaDonation([FromBody] SepaDonationRequest request)
+        public async Task<IActionResult> CreateSepaDonation([FromBody] SepaDonationRequestDto request)
         {
             if (request.Amount <= 0 || string.IsNullOrEmpty(request.SepaRequest?.Iban) || string.IsNullOrEmpty(request.CustomerId))
             {
@@ -73,20 +85,37 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 
             var result = await _stripeService.CreateSepaDonationAsync(request, request.CustomerId);
 
-            if (result.Contains("Donation completed successfully"))
+            if (result.Success)
             {
-                return Ok(new { success = true, message = result });
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message,
+                    transactionId = result.TransactionId,
+                    receiptUrl = result.ReceiptUrl
+                });
             }
-            else if (result.Contains("processing"))
+            else if (result.Message.Contains("processing", StringComparison.OrdinalIgnoreCase))
             {
-                return Accepted(new { success = true, message = result });
+                return Accepted(new
+                {
+                    success = false,
+                    message = result.Message,
+                    transactionId = result.TransactionId
+                });
             }
             else
             {
-                _logger.LogError("Failed to process SEPA donation.");
-                return BadRequest(new { success = false, message = result });
+                _logger.LogError("Failed to process SEPA donation: {Message}", result.Message);
+                return BadRequest(new
+                {
+                    success = false,
+                    message = result.Message,
+                    transactionId = result.TransactionId
+                });
             }
         }
+
 
 
 

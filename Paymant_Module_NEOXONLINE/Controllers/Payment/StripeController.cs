@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
-using Payment.Domain;
 using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
@@ -251,7 +250,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         {
             try
             {
-                return Ok(await _stripeService.CreateRefundAsync(paymentIntentId, amount, reason));
+                return Ok(await _stripeService.CreateRefundAsync(paymentIntentId, (long)amount, reason));
             }
             catch (StripeException ex)
             {

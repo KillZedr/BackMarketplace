@@ -57,7 +57,7 @@ namespace Paymant_Module_NEOXONLINE
             {
                 var builder = new DbContextOptionsBuilder<Payment_DbContext>();
 
-                builder.UseNpgsql("host=localhost;port=5432;database=Paymant_Module_Db;Username=postgres;Password=KIDPay321");
+                builder.UseNpgsql("host=localhost;port=5432;database=Payment_Module_Db;Username=postgres;Password=KIDPay321");
 
                 
                 return builder.Options;

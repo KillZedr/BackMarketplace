@@ -316,7 +316,7 @@ namespace Payment.Application.Migrations
                     b.ToTable("PaymentFees", (string)null);
                 });
 
-            modelBuilder.Entity("Payment.Domain.StripeDonation", b =>
+            modelBuilder.Entity("Payment.Domain.Stripe.StripeDonation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -353,7 +353,7 @@ namespace Payment.Application.Migrations
                     b.ToTable("StripeDonation");
                 });
 
-            modelBuilder.Entity("Payment.Domain.StripeTransaction", b =>
+            modelBuilder.Entity("Payment.Domain.Stripe.StripeTransaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Payment.BLL.Contracts.ECommerce
 {
-    internal interface ISubscriptionService:IService
+    internal interface ISubscriptionService : IService
     {
         void GetInfoAboutUsersSubscription(string username);
         void Subscribe(string username, bool isEmailNotificationRequired, bool isWebNotificationRequired);
