@@ -420,7 +420,9 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                     // Обновляем существующую запись
                     existingFee.PercentageFee = fee.PercentageFee;
                     existingFee.FixedFee = fee.FixedFee;
-                    existingFee.LastUpdated = fee.LastUpdated;
+
+                    // Обновляем LastUpdated для существующей записи
+                    existingFee.LastUpdated = DateTime.UtcNow;
 
                     repository.Update(existingFee);
                     await _unitOfWork.SaveShangesAsync();
@@ -429,8 +431,6 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 }
 
                 // Добавляем новую запись
-
-
                 repository.Create(fee);
                 await _unitOfWork.SaveShangesAsync();
 
@@ -450,6 +450,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 });
             }
         }
+
 
 
     }
