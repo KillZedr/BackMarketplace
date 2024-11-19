@@ -303,7 +303,7 @@ namespace Payment.Application.Migrations
                         .HasColumnType("decimal(10, 2)");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
@@ -314,10 +314,6 @@ namespace Payment.Application.Migrations
                         .HasColumnType("decimal(5, 2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PaymentMethod")
-                        .IsUnique()
-                        .HasDatabaseName("IX_PaymentMethod_Unique");
 
                     b.HasIndex("PaymentMethod", "Currency")
                         .IsUnique()
