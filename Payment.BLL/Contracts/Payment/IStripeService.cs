@@ -37,5 +37,6 @@ namespace Payment.BLL.Contracts.Payment
         Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId);
         Task<string> CreateSepaDonationAsync(SepaDonationRequest request, string customerId);
         PaymentFee ValidateAndPreparePaymentFee(PaymentFee fee);
+        Task<PaymentFee?> GetPaymentFeeByMethodAsync(string paymentMethod);
     }
 }

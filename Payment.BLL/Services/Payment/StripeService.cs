@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
+using Microsoft.EntityFrameworkCore;
 using Payment.BLL.Services.PayProduct;
 using Payment.Domain;
 using Payment.Domain.ECommerce;
@@ -29,9 +31,10 @@ namespace Payment.BLL.Services.Payment
         private readonly RefundService _refundService;
         private readonly PaymentIntentService _paymentIntentService;
         private readonly ILogger<StripeService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
 
-        public StripeService(ILogger<StripeService> logger)
+        public StripeService(ILogger<StripeService> logger,  IUnitOfWork unitOfWork)
         {
             _productService = new Stripe.ProductService();
             _priceService = new PriceService();
@@ -40,6 +43,7 @@ namespace Payment.BLL.Services.Payment
             _refundService = new RefundService();
             _paymentIntentService = new PaymentIntentService();
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<StripeList<Product>> GetAllStripeProductsAsync()
@@ -290,6 +294,18 @@ namespace Payment.BLL.Services.Payment
                     return "Invalid payment amount.";
                 }
 
+                var paymentFee = await GetPaymentFeeByMethodAsync("card");
+
+                if (paymentFee == null)
+                {
+                    return "Payment fee configuration for 'card' is missing.";
+                }
+
+                // calculate the amount
+                var totalAmount = paymentFee != null
+                    ? basket.Amount + (basket.Amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee
+                    : basket.Amount;
+
                 // Create a PaymentMethod using the Google Pay token
                 var paymentMethodOptions = new PaymentMethodCreateOptions
                 {
@@ -306,7 +322,7 @@ namespace Payment.BLL.Services.Payment
                 //Create a PaymentIntent using the created PaymentMethod
                 var paymentIntentOptions = new PaymentIntentCreateOptions
                 {
-                    Amount = (long)(basket.Amount * 100), 
+                    Amount = (long)(totalAmount * 100), 
                     Currency = "eur",
                     PaymentMethod = paymentMethod.Id, 
                     Description = $"Google Pay payment for Basket ID: {basket.BasketId} on {DateTime.UtcNow}",
@@ -358,9 +374,22 @@ namespace Payment.BLL.Services.Payment
                     throw new ArgumentException("IBAN is missing.");
                 }
 
+                var paymentFee = await GetPaymentFeeByMethodAsync("sepa_debit");
+
+                if (paymentFee == null)
+                {
+                    return "Payment fee configuration for 'sepa_debit' is missing.";
+                }
+
+                // calculate the amount
+                var totalAmount = paymentFee != null
+                    ? basket.Amount + (basket.Amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee
+                    : basket.Amount;
+
+
                 var options = new PaymentIntentCreateOptions
                 {
-                    Amount = (long)(basket.Amount * 100),
+                    Amount = (long)(totalAmount * 100),
                     Currency = "eur",
                     PaymentMethodTypes = new List<string> { "sepa_debit" },
                     Metadata = new Dictionary<string, string>
@@ -440,6 +469,18 @@ namespace Payment.BLL.Services.Payment
                     return "Google Pay token is missing.";
                 }
 
+                var paymentFee = await GetPaymentFeeByMethodAsync("card");
+
+                if (paymentFee == null)
+                {
+                    return "Payment fee configuration for 'card' is missing.";
+                }
+
+                // calculate the amount
+                var totalAmount = paymentFee != null
+                    ? amount + (amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee
+                    : amount;
+
                 //  Create a PaymentMethod using the Google Pay token
                 var paymentMethodOptions = new PaymentMethodCreateOptions
                 {
@@ -456,7 +497,7 @@ namespace Payment.BLL.Services.Payment
                 // Create a PaymentIntent using the created PaymentMethod
                 var paymentIntentOptions = new PaymentIntentCreateOptions
                 {
-                    Amount = (long)(amount * 100), 
+                    Amount = (long)(totalAmount * 100), 
                     Currency = currency,
                     PaymentMethod = paymentMethod.Id,
                     Customer = customerId,
@@ -506,9 +547,21 @@ namespace Payment.BLL.Services.Payment
                 var customerService = new CustomerService();
                 var customer = await customerService.GetAsync(customerId);
 
+                var paymentFee = await GetPaymentFeeByMethodAsync("sepa_debit");
+
+                if (paymentFee == null)
+                {
+                    return "Payment fee configuration for 'sepa_debit' is missing.";
+                }
+
+                // calculate the amount
+                var totalAmount = paymentFee != null
+                    ? request.Amount + (request.Amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee
+                    : request.Amount;
+
                 var options = new PaymentIntentCreateOptions
                 {
-                    Amount = (long)(request.Amount * 100),
+                    Amount = (long)(totalAmount * 100),
                     Currency = request.Currency,
                     Customer = customerId,
                     PaymentMethodTypes = new List<string> { "sepa_debit" },
@@ -600,6 +653,20 @@ namespace Payment.BLL.Services.Payment
             fee.LastUpdated = DateTime.UtcNow;
 
             return fee;
+        }
+        public async Task<PaymentFee?> GetPaymentFeeByMethodAsync(string paymentMethod)
+        {
+            if (string.IsNullOrEmpty(paymentMethod))
+            {
+                return null;
+            }
+
+            var repository = _unitOfWork.GetRepository<PaymentFee>();
+            var paymentFee = await repository.AsQueryable()
+                .FirstOrDefaultAsync(p => p.PaymentMethod.ToLower() == paymentMethod.ToLower());
+
+            return paymentFee;
+
         }
     }
 }
