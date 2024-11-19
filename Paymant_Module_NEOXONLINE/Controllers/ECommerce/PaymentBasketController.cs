@@ -19,8 +19,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         }
 
 
-        [HttpGet("AllPaymentBasket")] 
-
+        
         /// <summary>
         /// Gets info about all payment baskets in db
         /// </summary> 

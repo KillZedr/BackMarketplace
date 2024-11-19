@@ -58,7 +58,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers
                 FirstName = userCreationDto.FirstName,
                 LastName = userCreationDto.LastName,
                 Email = userCreationDto.Email,
-                Сountry = userCreationDto.Country,
+                Сountry = userCreationDto.Сountry,
                 Address = userCreationDto.Address,
                 PhoneNumber = userCreationDto.PhoneNumber,
                 //Basket = new List<Basket>(),
@@ -108,7 +108,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers
                 user.FirstName = userDto.FirstName;
                 user.LastName = userDto.LastName;
                 user.Email = userDto.Email;
-                user.Сountry = userDto.Country;
+                user.Сountry = userDto.Сountry;
                 user.Address = userDto.Address;
                 user.PhoneNumber = userDto.PhoneNumber;
 

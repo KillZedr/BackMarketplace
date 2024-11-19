@@ -6,6 +6,7 @@ using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
 using Payment.Domain;
+using Payment.Domain.DTOs;
 using Payment.Domain.ECommerce;
 using Payment.Domain.PayProduct;
 using Stripe;
@@ -13,7 +14,7 @@ using Stripe.Checkout;
 using Stripe.FinancialConnections;
 using Stripe.Terminal;
 using Stripe.V2;
-using static Paymant_Module_NEOXONLINE.Controllers.CurrancyLayer.CurrencyLayerController;
+
 
 namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 {
@@ -92,7 +93,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             try
             {
                 var productId = await _stripeService.CreateStripeProductAsync(productDto);
-                var priceId = await _stripeService.CreateStripePriceAsync(productId, productDto.Price);
+                var priceId = await _stripeService.CreateStripePriceAsync(productId, (decimal)productDto.Price);
                 return Ok(new { ProductId = productId, PriceId = priceId });
             }
             catch (Exception ex)
