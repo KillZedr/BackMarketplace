@@ -8,17 +8,15 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
 
-namespace Paymant_Module_NEOXONLINE.Controllers
+namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 {
     [Route("api/[controller]")]
     [ApiController]
     public class SepaController : ControllerBase
     {
-        private readonly IStripeService _stripeService;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<SepaController> _logger;
+        [HttpGet("GetInfo")]
 
-        public SepaController(IStripeService stripeService, IUnitOfWork unitOfWork, ILogger<SepaController> logger)
+        public async Task<IActionResult> Get()
         {
             _stripeService = stripeService;
             _unitOfWork = unitOfWork;
