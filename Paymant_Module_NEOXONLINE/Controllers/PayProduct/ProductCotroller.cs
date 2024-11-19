@@ -67,8 +67,6 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
         }
 
-      
-
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct(ProductCreationDto productCreationDto)
         {

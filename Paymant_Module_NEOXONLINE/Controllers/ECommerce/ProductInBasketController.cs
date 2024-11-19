@@ -20,9 +20,12 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             _unitOfWork = unitOfWork;
         }
 
-
+        /// <summary>
+        /// Gets info about all products in baskets in db
+        /// </summary> 
+        /// <response code="200">returns info about all products in baskets in db</response>
+        /// <response code="500">server error</response>
         [HttpGet("AllProductsInBasket")]
-
         public async Task<IActionResult> GetAllProductsInBasket()
         {
             var repoProductInBasket = await _unitOfWork.GetAllIncluding<ProductInBasket>(pib => pib.Product)
@@ -32,9 +35,13 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             return Ok(repoProductInBasket);
         }
 
-
+        /// <summary>
+        /// Gets info about all products in baskets in db for certain user
+        /// </summary> 
+        /// <param name="username">id of payment basket</param>
+        /// <response code="200">returns info about all products in baskets in db</response>
+        /// <response code="500">server error</response>
         [HttpGet("GetUsersProductsInBasket")]
-
         public async Task<IActionResult> GetUsersProductsInBasket(string username)
         {
             var repoProductInBasket = await _unitOfWork.GetAllIncluding<ProductInBasket>(pib => pib.Product).Where(pib=>pib.Basket.User.FirstName.Equals(username)).ToListAsync();
@@ -91,7 +98,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             }
             else
             {
-                return BadRequest(new { message = $"Invalid source data. Not Found Product in basket with {productName} name and {username} username" });
+                return NotFound(new { message = $"Invalid source data. Not Found Product in basket with {productName} name and {username} username" });
             }           
         }
     }

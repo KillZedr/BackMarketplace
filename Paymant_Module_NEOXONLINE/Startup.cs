@@ -20,7 +20,6 @@ namespace Paymant_Module_NEOXONLINE
     {
         internal static void AddServices(WebApplicationBuilder builder)
         {
-            
             AddSerilog(builder);
             RegisterDAL(builder.Services);
 
@@ -49,7 +48,6 @@ namespace Paymant_Module_NEOXONLINE
         {
 
             StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
-   
 
         }
 
@@ -58,13 +56,16 @@ namespace Paymant_Module_NEOXONLINE
             services.AddTransient<DbContextOptions<Payment_DbContext>>(provider =>
             {
                 var builder = new DbContextOptionsBuilder<Payment_DbContext>();
-                builder.UseNpgsql("host=localhost;port=5432;database=Payment_Module_Db;Username=postgres;Password=KIDPay321");
+
+                builder.UseNpgsql("host=localhost;port=5433;database=Paymant_Module_Db;Username=postgres;Password=KIDPay321");
+
+                builder.UseNpgsql("host=localhost;port=5432;database=Paymant_Module_Db;Username=postgres;Password=KIDPay321");
                 return builder.Options;
             });
 
             services.AddScoped<DbContext, Payment_DbContext>();
 
-            services.AddScoped<IUnitOfWork>(prov =>
+            services.AddScoped<IUnitOfWork>(prov => 
             {
                 var context = prov.GetRequiredService<DbContext>();
                 return new UnitOfWork(context);

@@ -20,7 +20,7 @@ namespace Payment.BLL.Contracts.PayPal
         Task<string> CreatePaymentAndGetApprovalUrlAsync(PaymentBasket basket);
         Task<PayPalPayment> ExecutePaymentAsync(string paymentId, string payerId);
 
-        Task<RefundResult> RefundPaymentAsync(string paymentId);
+        Task<RefundResult> RefundPaymentAsync(string paymentId); 
         Task<string> CreateDonationPaymentAndGetApprovalUrlAsync(decimal price, string currency, string email);
 
 

@@ -22,7 +22,7 @@ namespace Payment.BLL.Services.Notifications
         public EmailNotificationService(ILogger<EmailNotificationService> logger, IOptions<SmtpSettings> smtpSettings)
         {
             _logger = logger;
-            _smtpSettings = smtpSettings.Value;
+            _smtpSettings = smtpSettings.Value; 
 
             _smtpClient = new SmtpClient(_smtpSettings.Server, _smtpSettings.Port)
             {

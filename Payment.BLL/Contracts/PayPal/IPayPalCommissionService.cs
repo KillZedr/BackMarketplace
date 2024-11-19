@@ -14,6 +14,6 @@ namespace Payment.BLL.Contracts.PayPal
         /// <param name="amount">The transaction amount.</param>
         /// <param name="currency">The currency code (e.g., USD, EUR, RUB, BYN).</param>
         /// <returns>The calculated commission for the given amount and currency.</returns>
-        decimal CalculateCommission(decimal amount, string currency);
+        decimal CalculateCommission(decimal amount, string currency); 
     }
 }

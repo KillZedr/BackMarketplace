@@ -6,7 +6,6 @@ using Payment.BLL.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Payment.BLL.Services.PayProduct;
 using Payment.Domain;
-using Payment.Domain.ECommerce;
 using Payment.Domain.Identity;
 using Payment.Domain.Stripe;
 using Stripe;
@@ -218,14 +217,14 @@ namespace Payment.BLL.Services.Payment
             return customer;
         }
 
-        public async Task<string> CreateRefundAsync(string paymentIntentId, long amount, string reason)
+        public async Task<string> CreateRefundAsync(string paymentIntentId, decimal amount, string reason)
         {
             try
             {
                 var refundOptions = new RefundCreateOptions
                 {
                     PaymentIntent = paymentIntentId,
-                    Amount = amount, // Сумма возврата в центах (optional, для частичного возврата)
+                    Amount = (long)(amount*100), // Сумма возврата в центах (optional, для частичного возврата)
                     Reason = reason ?? "requested_by_customer" //"duplicate", "fraudulent", "requested_by_customer"
                 };
 

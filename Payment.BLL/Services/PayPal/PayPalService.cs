@@ -31,7 +31,7 @@ namespace Payment.BLL.Services.PayPal
         public PayPalService(IOptions<PayPalSettings> payPalSettings, ILogger<PayPalService> logger, IPayPalCommissionService commissionService, IUnitOfWork unitOfWork)
         {
             _payPalSetting = payPalSettings.Value;
-            _logger = logger; // Инициализация логгера Microsoft.Extensions.Logging;
+            _logger = logger; // Инициализация логгера Microsoft.Extensions.Logging; 
             _apiContext = new APIContext(new OAuthTokenCredential(
                 _payPalSetting.ClientId,
                 _payPalSetting.ClientSecret

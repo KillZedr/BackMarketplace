@@ -12,8 +12,8 @@ using Payment.Application;
 namespace Payment.Application.Migrations
 {
     [DbContext(typeof(Payment_DbContext))]
-    [Migration("20241108225513_AddFildInPayPalPaymentTransaction2")]
-    partial class AddFildInPayPalPaymentTransaction2
+    [Migration("20241018121332_AddEntitySubscriptionMigration")]
+    partial class AddEntitySubscriptionMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,7 +41,8 @@ namespace Payment.Application.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.HasIndex("UserId1");
 
@@ -72,10 +73,6 @@ namespace Payment.Application.Migrations
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("UserEmail")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
 
@@ -131,16 +128,9 @@ namespace Payment.Application.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("UserId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Subscription");
                 });
@@ -177,70 +167,6 @@ namespace Payment.Application.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("User");
-                });
-
-            modelBuilder.Entity("Payment.Domain.PayPal.PayPalPaymentTransaction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("PayerId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<int>("PaymentBasketId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PaymentId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("RefundId")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime?>("RefundedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SaleId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PaymentId")
-                        .IsUnique();
-
-                    b.HasIndex("SaleId");
-
-                    b.ToTable("PayPalPaymentTransaction");
                 });
 
             modelBuilder.Entity("Payment.Domain.PayProduct.Category", b =>
@@ -292,8 +218,8 @@ namespace Payment.Application.Migrations
             modelBuilder.Entity("Payment.Domain.ECommerce.Basket", b =>
                 {
                     b.HasOne("Payment.Domain.Identity.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne()
+                        .HasForeignKey("Payment.Domain.ECommerce.Basket", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -342,19 +268,7 @@ namespace Payment.Application.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Payment.Domain.Identity.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Payment.Domain.Identity.User", null)
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("UserId1");
-
                     b.Navigation("Product");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Payment.Domain.PayProduct.Product", b =>
@@ -376,8 +290,6 @@ namespace Payment.Application.Migrations
             modelBuilder.Entity("Payment.Domain.Identity.User", b =>
                 {
                     b.Navigation("Basket");
-
-                    b.Navigation("Subscriptions");
                 });
 
             modelBuilder.Entity("Payment.Domain.PayProduct.Category", b =>

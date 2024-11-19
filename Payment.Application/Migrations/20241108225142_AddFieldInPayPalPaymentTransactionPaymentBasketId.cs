@@ -16,7 +16,7 @@ namespace Payment.Application.Migrations
                 type: "character varying(255)",
                 maxLength: 255,
                 nullable: true,
-                oldClrType: typeof(string),
+                oldClrType: typeof(string), 
                 oldType: "text",
                 oldNullable: true);
         }

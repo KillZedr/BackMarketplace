@@ -14,9 +14,7 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.Identity
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasMany<Basket>().WithOne(b => b.User).HasForeignKey(b => b.UserId);
-            builder.HasMany<Subscription>().WithOne(s => s.User).HasForeignKey(s => s.UserId);
-            
+            builder.HasOne<Basket>().WithOne(b => b.User);
         }
     }
 }
