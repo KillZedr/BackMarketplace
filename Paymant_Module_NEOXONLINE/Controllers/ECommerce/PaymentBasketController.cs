@@ -21,8 +21,8 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         /// <summary>
         /// Gets info about all payment baskets in db
         /// </summary> 
-        /// <response code="200">returns info about all payment baskets in db</response>
-        /// <response code="500">server error</response>
+        /// <response code="200">Returns info about all payment baskets in db</response>
+        /// <response code="500">Server error</response>
         [HttpGet("AllPaymentBasket")]
         public async Task<IActionResult> GetAllPaymentBasket()
         {
@@ -34,10 +34,10 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         /// <summary>
         /// Gets info about certain payment basket
         /// </summary> 
-        /// <param name="id">id of payment basket</param>
+        /// <param name="id">Id of payment basket</param>
         /// <response code="200">Gets info about payment basket</response>
-        /// <response code="404">payment basket with such id not found</response>
-        /// <response code="500">server error</response>
+        /// <response code="404">Payment basket with such id not found</response>
+        /// <response code="500">Server error</response>
         [HttpGet("PaymentBasketById")]
         public async Task<IActionResult> GetPaymentBasketById (int id)
         {
@@ -57,10 +57,10 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         /// <summary>
         /// Deletes payment basket
         /// </summary> 
-        /// <param name="source">source of payment basket</param>
-        /// <response code="200">payment basket deleted successfully</response>
-        /// <response code="404">source not found</response>
-        /// <response code="500">server error</response>
+        /// <param name="source">Source of payment basket</param>
+        /// <response code="200">Payment basket deleted successfully</response>
+        /// <response code="404">Source not found</response>
+        /// <response code="500">Server error</response>
         [HttpDelete("Payment")]
         public async Task<IActionResult> DeletePayment(string source)
         {

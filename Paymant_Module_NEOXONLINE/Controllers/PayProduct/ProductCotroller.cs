@@ -26,12 +26,26 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             _productService = productService;
         }
 
+        /// <summary>
+        /// Gets info about all products in db
+        /// </summary> 
+        /// <response code="200">Returns info about all products in db</response>
+        /// <response code="500">Server error</response>
         [HttpGet("GetAllProducts")]
         public async Task<IActionResult> GetAllProducts()
         {
             return Ok(_unitOfWork.GetAllIncluding<Product>(p => p.Category).ToList());
         }
 
+        /// <summary>
+        /// Gets info about all products in the specified price range in db
+        /// </summary> 
+        /// <param name="lowerLimit">Lower limit of price</param>
+        /// <param name="higherLimit">Higher limit of price</param>
+        /// <response code="200">Returns info about suitable products</response>
+        /// <response code="400">Invalid value of lower or higher limit</response>
+        /// <response code="404">There are no products in such range</response>
+        /// <response code="500">Server error</response>
         [HttpGet("GetProductsFromPriceToPrice")]
         public async Task<IActionResult> GetProductsFromPriceToPrice(decimal lowerLimit, decimal higherLimit)
         {
@@ -49,10 +63,17 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
             else
             {
-                return BadRequest($"lower limit must be less than higher limit");
+                return BadRequest($"Lower limit must be less than higher limit");
             }
         }
 
+        /// <summary>
+        /// Gets info about certain product in db
+        /// </summary> 
+        /// <param name="productName">Name of product to get information about</param>
+        /// <response code="200">Returns info about certain product</response>
+        /// <response code="404">Product with such name not found</response>
+        /// <response code="500">Server error</response>
         [HttpGet("GetProductByName")]
         public async Task<IActionResult> GetProductByName(string productName)
         {
@@ -63,17 +84,24 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
             else
             {
-                return NotFound($"product with name {productName} not found ");
+                return NotFound($"Product with name {productName} not found ");
             }
         }
 
+        /// <summary>
+        /// Creates product in db
+        /// </summary> 
+        /// <response code="200">Returns info about created product</response>
+        /// <response code="404">Category with such name not found</response>
+        /// <response code="500">Server error</response>
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct(ProductCreationDto productCreationDto)
         {
             var category = await _unitOfWork.GetRepository<Category>()
                 .AsQueryable()
                 .FirstOrDefaultAsync(c => c.Name == productCreationDto.CategoryName);
-
+            //todo
+            //check if product name is unique
             if (category != null)
             {
                 var newProduct = new Product
@@ -96,8 +124,13 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
         }
 
+        /// <summary>
+        /// Updates product in db
+        /// </summary> 
+        /// <response code="200">Returns info about updated product</response>
+        /// <response code="404">Product with such name or category with such name not found</response>
+        /// <response code="500">Server error</response>
         [HttpPut("UpdateProduct")]
-
         public async Task<IActionResult> UpdateProduct(ProductCreationDto productDto)
         {
             var product = await _unitOfWork.GetRepository<Product>()
@@ -110,6 +143,8 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                     .FirstOrDefaultAsync(c => c.Name.Equals(productDto.CategoryName));
                 if (category != null)
                 {
+                    //todo
+                    //check if new product name is unique
                     product.Name = productDto.Name;
                     product.Description = productDto.Description;
                     product.Price = productDto.Price;
@@ -131,7 +166,12 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
             }
         }
 
-
+        /// <summary>
+        /// Deletes product from db
+        /// </summary> 
+        /// <response code="200">Product deleted successfully</response>
+        /// <response code="404">Product with such name not found</response>
+        /// <response code="500">Server error</response>
         [HttpDelete("DeleteProduct")]
 
         public async Task<IActionResult> DeleteProduct(string productName)
@@ -141,7 +181,7 @@ namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
                 .FirstOrDefaultAsync(p => p.Name.Equals(productName));
             if (deletedProduct == null)
             {
-                return BadRequest(new { message = $"Invalid source data. Not Found {productName}" });
+                return NotFound(new { message = $"Invalid source data. Not Found {productName}" });
             }
             else
             {
