@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Payment.Domain
+namespace Payment.Domain.Stripe
 {
     public class StripeTransaction : Entity<int>
     {

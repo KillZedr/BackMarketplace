@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Payment.Domain;
+using Payment.Domain.Stripe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Payment.Application.Payment_DAL.EntityTypeConfigurations
+namespace Payment.Application.Payment_DAL.EntityTypeConfigurations.Stripe
 {
     internal class StripeDonationConfiguration : IEntityTypeConfiguration<StripeDonation>
     {
@@ -32,6 +32,8 @@ namespace Payment.Application.Payment_DAL.EntityTypeConfigurations
 
             builder.Property(d => d.IsSuccessful)
                 .IsRequired();
+            builder.Property(d => d.PaymentMethod)
+                .IsRequired(false);
         }
     }
 }

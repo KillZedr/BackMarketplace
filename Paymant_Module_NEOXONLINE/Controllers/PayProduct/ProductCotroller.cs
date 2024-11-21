@@ -10,6 +10,7 @@ using Payment.BLL.Services.PayProduct;
 using System.Xml.Linq;
 using Payment.BLL.Contracts.PayProduct;
 using Payment.BLL.Contracts.Payment;
+using Payment.Domain.DTOs;
 
 namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
 {

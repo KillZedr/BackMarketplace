@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Payment.Application.Payment_DAL.Contracts;
 using Payment.BLL.Contracts.Payment;
 using Payment.BLL.DTOs;
+using Microsoft.EntityFrameworkCore;
 using Payment.BLL.Services.PayProduct;
 using Payment.Domain;
+using Payment.Domain.ECommerce;
 using Payment.Domain.Identity;
+using Payment.Domain.Stripe;
 using Stripe;
 using Stripe.Checkout;
 using Stripe.Forwarding;
@@ -13,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Payment.Domain.DTOs;
 
 
 namespace Payment.BLL.Services.Payment
@@ -25,8 +31,13 @@ namespace Payment.BLL.Services.Payment
         private readonly CustomerService _customerService;
         private readonly RefundService _refundService;
         private readonly PaymentIntentService _paymentIntentService;
+        private readonly ILogger<StripeService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public StripeService()
+
+
+
+        public StripeService(ILogger<StripeService> logger,  IUnitOfWork unitOfWork)
         {
             _productService = new Stripe.ProductService();
             _priceService = new PriceService();
@@ -34,6 +45,8 @@ namespace Payment.BLL.Services.Payment
             _customerService = new CustomerService();
             _refundService = new RefundService();
             _paymentIntentService = new PaymentIntentService();
+            _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<StripeList<Product>> GetAllStripeProductsAsync()
@@ -200,7 +213,7 @@ namespace Payment.BLL.Services.Payment
                 {
                     Line1 = userDto.Address,
                     City = userDto.City,
-                    Country = userDto.Сountry
+                    Country = userDto.Country
                 },                
             };
             var customer = _customerService.Create(customerOptions);
@@ -208,14 +221,14 @@ namespace Payment.BLL.Services.Payment
             return customer;
         }
 
-        public async Task<string> CreateRefundAsync(string paymentIntentId, decimal amount, string reason)
+        public async Task<string> CreateRefundAsync(string paymentIntentId, long amount, string reason)
         {
             try
             {
                 var refundOptions = new RefundCreateOptions
                 {
                     PaymentIntent = paymentIntentId,
-                    Amount = (long)(amount*100), // Сумма возврата в центах (optional, для частичного возврата)
+                    Amount = amount, // Сумма возврата в центах (optional, для частичного возврата)
                     Reason = reason ?? "requested_by_customer" //"duplicate", "fraudulent", "requested_by_customer"
                 };
 
@@ -268,6 +281,488 @@ namespace Payment.BLL.Services.Payment
             PaymentIntent intent = await _paymentIntentService.CreateAsync(options);
 
             return intent.ClientSecret;
+        }
+
+        public async Task<string> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(googlePayToken))
+                {
+                    return "Google Pay token is missing.";
+                }
+
+                if (basket.Amount <= 0)
+                {
+                    return "Invalid payment amount.";
+                }
+
+                var paymentFee = await GetPaymentFeeByMethodAsync("card");
+
+                if (paymentFee == null)
+                {
+                    return "Payment fee configuration for 'card' is missing.";
+                }
+
+                // calculate the amount
+                var totalAmount = paymentFee != null
+                    ? basket.Amount + (basket.Amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee
+                    : basket.Amount;
+
+                // Create a PaymentMethod using the Google Pay token
+                var paymentMethodOptions = new PaymentMethodCreateOptions
+                {
+                    Type = "card",
+                    Card = new PaymentMethodCardOptions
+                    {
+                        Token = googlePayToken 
+                    }
+                };
+
+                var paymentMethodService = new PaymentMethodService();
+                var paymentMethod = await paymentMethodService.CreateAsync(paymentMethodOptions);
+
+                //Create a PaymentIntent using the created PaymentMethod
+                var paymentIntentOptions = new PaymentIntentCreateOptions
+                {
+                    Amount = (long)(totalAmount * 100), 
+                    Currency = "eur",
+                    PaymentMethod = paymentMethod.Id, 
+                    Description = $"Google Pay payment for Basket ID: {basket.BasketId} on {DateTime.UtcNow}",
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "TransactionType", "GooglePay" }
+                    },
+                    Confirm = true, // Automatically confirm the payment
+                    ReturnUrl = "https://docs.stripe.com", 
+                    AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+                    {
+                        Enabled = true,
+                    }
+                };
+
+                var paymentIntentService = new PaymentIntentService();
+                var paymentIntent = await paymentIntentService.CreateAsync(paymentIntentOptions);
+
+                // Check the status of the PaymentIntent and return the appropriate message
+                if (paymentIntent.Status == "succeeded")
+                {
+                    _logger.LogInformation("Google Pay payment succeeded for Basket ID: {BasketId}", basket.BasketId);
+                    return $"Payment completed successfully. Transaction ID: {paymentIntent.Id}";
+                }
+                else if (paymentIntent.Status == "pending" || paymentIntent.Status == "processing")
+                {
+                    _logger.LogInformation("Google Pay payment is processing for Basket ID: {BasketId}", basket.BasketId);
+                    return $"Payment is processing. Transaction ID: {paymentIntent.Id}, Status: {paymentIntent.Status}";
+                }
+                else
+                {
+                    _logger.LogWarning("Google Pay payment failed for Basket ID: {BasketId}, Status: {Status}", basket.BasketId, paymentIntent.Status);
+                    return $"Payment failed. Status: {paymentIntent.Status}";
+                }
+            }
+            catch (StripeException ex)
+            {
+                _logger.LogError(ex, "Error processing Google Pay payment for Basket ID: {BasketId}", basket.BasketId);
+                return $"Error processing payment: {ex.Message}";
+            }
+        }
+
+        public async Task<PaymentResultDto> ProcessSepaPaymentAsync(PaymentBasket basket, SepaPaymentRequestDto sepaRequest)
+        {
+            const int maxRetries = 5; // max try to connect
+            const int retryDelay = 5000; //delay between trying 
+            int attempt = 0;
+
+            try
+            {
+                if (string.IsNullOrEmpty(sepaRequest.Iban))
+                {
+                    return new PaymentResultDto
+                    {
+                        Success = false,
+                        Message = "IBAN is missing."
+                    };
+                }
+
+                var paymentFee = await GetPaymentFeeByMethodAsync("sepa_debit");
+
+                if (paymentFee == null)
+                {
+                    return new PaymentResultDto
+                    {
+                        Success = false,
+                        Message = "Payment fee configuration for 'sepa_debit' is missing."
+                    };
+                }
+
+                // Calculate the amount
+                var totalAmount = basket.Amount + (basket.Amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee;
+
+                var options = new PaymentIntentCreateOptions
+                {
+                    Amount = (long)(totalAmount * 100),
+                    Currency = "eur",
+                    PaymentMethodTypes = new List<string> { "sepa_debit" },
+                    Metadata = new Dictionary<string, string>
+            {
+                { "TransactionType", "SEPAPay" }
+            }
+                };
+
+                var paymentIntent = await _paymentIntentService.CreateAsync(options);
+
+                var confirmOptions = new PaymentIntentConfirmOptions
+                {
+                    PaymentMethodData = new PaymentIntentPaymentMethodDataOptions
+                    {
+                        Type = "sepa_debit",
+                        SepaDebit = new PaymentIntentPaymentMethodDataSepaDebitOptions
+                        {
+                            Iban = sepaRequest.Iban
+                        },
+                        BillingDetails = new PaymentIntentPaymentMethodDataBillingDetailsOptions
+                        {
+                            Email = basket.UserEmail,
+                            Name = basket.Basket.User.FirstName
+                        }
+                    },
+                    MandateData = new PaymentIntentMandateDataOptions
+                    {
+                        CustomerAcceptance = new PaymentIntentMandateDataCustomerAcceptanceOptions
+                        {
+                            Type = "online",
+                            Online = new PaymentIntentMandateDataCustomerAcceptanceOnlineOptions
+                            {
+                                IpAddress = sepaRequest.IpAddress,
+                                UserAgent = sepaRequest.UserAgent
+                            }
+                        }
+                    }
+                };
+
+                var confirmedPaymentIntent = await _paymentIntentService.ConfirmAsync(paymentIntent.Id, confirmOptions);
+
+                while (confirmedPaymentIntent.Status == "processing" && attempt < maxRetries)
+                {
+                    await Task.Delay(retryDelay); // Delay before retrying
+                    attempt++;
+
+                    // Повторно запрашиваем статус платежа
+                    confirmedPaymentIntent = await _paymentIntentService.GetAsync(confirmedPaymentIntent.Id);
+                }
+
+                if (confirmedPaymentIntent.Status == "succeeded")
+                {
+                    string receiptUrl = null;
+                    if (!string.IsNullOrEmpty(confirmedPaymentIntent.LatestChargeId))
+                    {
+                        var chargeService = new ChargeService();
+                        var charge = await chargeService.GetAsync(confirmedPaymentIntent.LatestChargeId);
+                        receiptUrl = charge?.ReceiptUrl;
+                    }
+
+                    return new PaymentResultDto
+                    {
+                        Success = true,
+                        Message = "Payment completed successfully.",
+                        TransactionId = confirmedPaymentIntent.Id,
+                        ReceiptUrl = receiptUrl
+                    };
+                }
+
+                if (confirmedPaymentIntent.Status == "processing")
+                {
+                    return new PaymentResultDto
+                    {
+                        Success = false,
+                        Message = "Payment is still processing after maximum retries.",
+                        TransactionId = confirmedPaymentIntent.Id
+                    };
+                }
+
+                return new PaymentResultDto
+                {
+                    Success = false,
+                    Message = $"Payment failed. Status: {confirmedPaymentIntent.Status}.",
+                    TransactionId = confirmedPaymentIntent.Id
+                };
+            }
+            catch (StripeException ex)
+            {
+                return new PaymentResultDto
+                {
+                    Success = false,
+                    Message = $"Stripe error: {ex.Message}."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PaymentResultDto
+                {
+                    Success = false,
+                    Message = $"Unexpected error: {ex.Message}."
+                };
+            }
+        }
+
+        public async Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId)
+        {
+            try
+            {
+                if (amount <= 0)
+                {
+                    return "Donation amount must be greater than zero.";
+                }
+
+                if (string.IsNullOrEmpty(googlePayToken))
+                {
+                    return "Google Pay token is missing.";
+                }
+
+                var paymentFee = await GetPaymentFeeByMethodAsync("card");
+
+                if (paymentFee == null)
+                {
+                    return "Payment fee configuration for 'card' is missing.";
+                }
+
+                // calculate the amount
+                var totalAmount = paymentFee != null
+                    ? amount + (amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee
+                    : amount;
+
+                //  Create a PaymentMethod using the Google Pay token
+                var paymentMethodOptions = new PaymentMethodCreateOptions
+                {
+                    Type = "card",
+                    Card = new PaymentMethodCardOptions
+                    {
+                        Token = googlePayToken
+                    }
+                };
+
+                var paymentMethodService = new PaymentMethodService();
+                var paymentMethod = await paymentMethodService.CreateAsync(paymentMethodOptions);
+
+                // Create a PaymentIntent using the created PaymentMethod
+                var paymentIntentOptions = new PaymentIntentCreateOptions
+                {
+                    Amount = (long)(totalAmount * 100), 
+                    Currency = currency,
+                    PaymentMethod = paymentMethod.Id,
+                    Customer = customerId,
+                    Description = "Google Pay donation",
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "DonationType", "GooglePayDonation" },
+                        { "TransactionType", "GooglePayDonation" }
+                    },
+                    Confirm = true, // Automatically confirm
+                    ReturnUrl = "https://docs.stripe.com",  
+                    AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+                    {
+                        Enabled = true
+                    }
+                };
+
+                var paymentIntentService = new PaymentIntentService();
+                var paymentIntent = await paymentIntentService.CreateAsync(paymentIntentOptions);
+
+                // Check payment status and return result
+                if (paymentIntent.Status == "succeeded")
+                {
+                    _logger.LogInformation("Google Pay donation succeeded. Transaction ID: {TransactionId}", paymentIntent.Id);
+                    return $"Donation completed successfully. Transaction ID: {paymentIntent.Id}";
+                }
+                else if (paymentIntent.Status == "requires_action")
+                {
+                    return $"Additional action required to complete donation. PaymentIntent ID: {paymentIntent.Id}";
+                }
+                else
+                {
+                    return $"Donation failed. PaymentIntent ID: {paymentIntent.Id}, Status: {paymentIntent.Status}";
+                }
+            }
+            catch (StripeException ex)
+            {
+                _logger.LogError(ex, "Error processing Google Pay donation.");
+                return $"Error processing donation: {ex.Message}";
+            }
+        }
+
+        public async Task<PaymentResultDto> CreateSepaDonationAsync(SepaDonationRequestDto request, string customerId)
+        {
+            const int maxRetries = 5;  // max try to connect
+            const int retryDelay = 5000; //delay between trying 
+            int attempt = 0;
+
+            try
+            {
+                var customerService = new CustomerService();
+                var customer = await customerService.GetAsync(customerId);
+
+                var paymentFee = await GetPaymentFeeByMethodAsync("sepa_debit");
+
+                if (paymentFee == null)
+                {
+                    return new PaymentResultDto
+                    {
+                        Success = false,
+                        Message = "Payment fee configuration for 'sepa_debit' is missing."
+                    };
+                }
+
+                //total amount with fee
+                var totalAmount = request.Amount + (request.Amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee;
+
+                var options = new PaymentIntentCreateOptions
+                {
+                    Amount = (long)(totalAmount * 100),
+                    Currency = request.Currency,
+                    Customer = customerId,
+                    PaymentMethodTypes = new List<string> { "sepa_debit" },
+                    Metadata = new Dictionary<string, string>
+            {
+                { "TransactionType", "SEPA_Donation" }
+            }
+                };
+
+                var paymentIntentService = new PaymentIntentService();
+                var paymentIntent = await paymentIntentService.CreateAsync(options);
+
+                var confirmOptions = new PaymentIntentConfirmOptions
+                {
+                    PaymentMethodData = new PaymentIntentPaymentMethodDataOptions
+                    {
+                        Type = "sepa_debit",
+                        SepaDebit = new PaymentIntentPaymentMethodDataSepaDebitOptions
+                        {
+                            Iban = request.SepaRequest.Iban
+                        },
+                        BillingDetails = new PaymentIntentPaymentMethodDataBillingDetailsOptions
+                        {
+                            Name = customer.Name,
+                            Email = customer.Email
+                        }
+                    },
+                    MandateData = new PaymentIntentMandateDataOptions
+                    {
+                        CustomerAcceptance = new PaymentIntentMandateDataCustomerAcceptanceOptions
+                        {
+                            Type = "online",
+                            Online = new PaymentIntentMandateDataCustomerAcceptanceOnlineOptions
+                            {
+                                IpAddress = request.SepaRequest.IpAddress,
+                                UserAgent = request.SepaRequest.UserAgent
+                            }
+                        }
+                    }
+                };
+
+                var confirmedPaymentIntent = await paymentIntentService.ConfirmAsync(paymentIntent.Id, confirmOptions);
+
+                //If the payment status is "processing", repeat the request until maxRetries
+                while (confirmedPaymentIntent.Status == "processing" && attempt < maxRetries)
+                {
+                    await Task.Delay(retryDelay); 
+                    attempt++;
+                    confirmedPaymentIntent = await paymentIntentService.GetAsync(confirmedPaymentIntent.Id);
+                }
+
+                if (confirmedPaymentIntent.Status == "succeeded")
+                {
+                    string receiptUrl = null;
+                    if (!string.IsNullOrEmpty(confirmedPaymentIntent.LatestChargeId))
+                    {
+                        var chargeService = new ChargeService();
+                        var charge = await chargeService.GetAsync(confirmedPaymentIntent.LatestChargeId);
+                        receiptUrl = charge?.ReceiptUrl;
+                    }
+
+                    return new PaymentResultDto
+                    {
+                        Success = true,
+                        Message = "Donation completed successfully.",
+                        TransactionId = confirmedPaymentIntent.Id,
+                        ReceiptUrl = receiptUrl
+                    };
+                }
+
+                if (confirmedPaymentIntent.Status == "processing")
+                {
+                    return new PaymentResultDto
+                    {
+                        Success = false,
+                        Message = "Donation is still processing after maximum retries.",
+                        TransactionId = confirmedPaymentIntent.Id
+                    };
+                }
+
+                return new PaymentResultDto
+                {
+                    Success = false,
+                    Message = $"Donation failed. Status: {confirmedPaymentIntent.Status}.",
+                    TransactionId = confirmedPaymentIntent.Id
+                };
+            }
+            catch (StripeException ex)
+            {
+                return new PaymentResultDto
+                {
+                    Success = false,
+                    Message = $"Stripe error: {ex.Message}."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PaymentResultDto
+                {
+                    Success = false,
+                    Message = $"Unexpected error: {ex.Message}."
+                };
+            }
+        }
+
+        public PaymentFee ValidateAndPreparePaymentFee(PaymentFee fee)
+        {
+            // Проверка входных данных
+            if (string.IsNullOrEmpty(fee.PaymentMethod))
+            {
+                throw new ArgumentException("Payment method is required.");
+            }
+
+            if (fee.PercentageFee < 0 || fee.FixedFee < 0)
+            {
+                throw new ArgumentException("Fees cannot be negative.");
+            }
+
+            if (string.IsNullOrEmpty(fee.Currency) || fee.Currency.Length != 3)
+            {
+                throw new ArgumentException("Invalid currency code.");
+            }
+
+            // Приводим валюту к верхнему регистру
+            fee.Currency = fee.Currency.ToUpper();
+
+            // Обновляем дату последнего изменения
+            fee.LastUpdated = DateTime.UtcNow;
+
+            return fee;
+        }
+        public async Task<PaymentFee?> GetPaymentFeeByMethodAsync(string paymentMethod)
+        {
+            if (string.IsNullOrEmpty(paymentMethod))
+            {
+                return null;
+            }
+
+            var repository = _unitOfWork.GetRepository<PaymentFee>();
+            var paymentFee = await repository.AsQueryable()
+                .FirstOrDefaultAsync(p => p.PaymentMethod.ToLower() == paymentMethod.ToLower());
+
+            return paymentFee;
+
         }
     }
 }

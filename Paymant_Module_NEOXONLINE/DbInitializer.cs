@@ -20,7 +20,7 @@ namespace Paymant_Module_NEOXONLINE
             logger.Information("Applying migrations...");
 
             var scope = serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var context = scope.ServiceProvider.GetRequiredService<DbContext>(); 
 
             try
             {

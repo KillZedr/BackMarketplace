@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Payment.BLL.Services
+namespace Payment.BLL.Services.ECommerce
 {
-    internal class SubscriptionService:ISubscriptionService
+    internal class SubscriptionService : ISubscriptionService
     {
         public void GetInfoAboutUsersSubscription(string username)
         {
@@ -16,7 +16,7 @@ namespace Payment.BLL.Services
 
         public void Subscribe(string username, bool isEmailNotificationRequired, bool isWebNotificationRequired)
         {
-            if(isEmailNotificationRequired)
+            if (isEmailNotificationRequired)
             {
                 NotifyByEmail(username);
             }
@@ -26,11 +26,11 @@ namespace Payment.BLL.Services
             }
         }
 
-        public void NotifyByEmail(string username) 
-        { 
+        public void NotifyByEmail(string username)
+        {
             //todo
             //get user by username, send notification to user's email
-            throw new NotImplementedException(); 
+            throw new NotImplementedException();
         }
 
         public void NotifyByWeb(string username)
