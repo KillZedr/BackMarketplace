@@ -1,4 +1,5 @@
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Payment.BLL;
 using Payment.BLL.Settings.NotificationSettings;
@@ -12,7 +13,13 @@ namespace Paymant_Module_NEOXONLINE
     {
         public static void Main(string[] args)
         {
+
+
             var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(5000);
+            });
 
             // Add services to the container.
 
@@ -65,15 +72,20 @@ namespace Paymant_Module_NEOXONLINE
             DbInitializer.InitializeDb(app.Services);
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            app.UseSwagger(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+                c.RouteTemplate = "billing/swagger/{documentName}/swagger.json";
+            });
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/billing/swagger/v1/swagger.json", "API v1");
+                c.RoutePrefix = "billing/swagger"; // Устанавливает путь для Swagger UI
+            });
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseCors("AllowAllOrigins"); 
+            app.UseCors("AllowAllOrigins");
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
@@ -81,11 +93,11 @@ namespace Paymant_Module_NEOXONLINE
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("htmlpage.html"); // Загружает index.html для корневого URL
             });
-             
+
 
             app.MapControllers();
 
-            app.Run(); 
+            app.Run();
         }
     }
 }

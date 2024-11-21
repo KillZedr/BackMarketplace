@@ -1,0 +1,42 @@
+services:
+  paymant_module_neoxonline:
+    build:
+      context: .
+      dockerfile: ./Paymant_Module_NEOXONLINE/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=Payment_NEOXONLINE_Db;Username=postgres;Password=KIDPay321
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: Payment_NEOXONLINE_Db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: KIDPay321
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  pgweb:
+    image: sosedoff/pgweb:latest
+    ports:
+      - "8081:8081"
+    environment:
+      DATABASE_URL: postgres://postgres:KIDPay321@db:5432/Payment_NEOXONLINE_Db?sslmode=disable
+    depends_on:
+      - db
+
+volumes:
+  db_data:

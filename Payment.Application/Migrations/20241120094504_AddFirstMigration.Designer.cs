@@ -12,8 +12,8 @@ using Payment.Application;
 namespace Payment.Application.Migrations
 {
     [DbContext(typeof(Payment_DbContext))]
-    [Migration("20241119174641_AddPaymentFee2")]
-    partial class AddPaymentFee2
+    [Migration("20241120094504_AddFirstMigration")]
+    partial class AddFirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

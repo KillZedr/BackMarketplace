@@ -16,6 +16,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Payment.Application", "Paym
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Payment.BLL", "Payment.BLL\Payment.BLL.csproj", "{E3CF25FD-5159-4070-986B-64E8A98BAF54}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{4392352F-49AD-4485-9410-913F740A950E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{E3CF25FD-5159-4070-986B-64E8A98BAF54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3CF25FD-5159-4070-986B-64E8A98BAF54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3CF25FD-5159-4070-986B-64E8A98BAF54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4392352F-49AD-4485-9410-913F740A950E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4392352F-49AD-4485-9410-913F740A950E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4392352F-49AD-4485-9410-913F740A950E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4392352F-49AD-4485-9410-913F740A950E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
