@@ -23,8 +23,8 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         /// <summary>
         /// Gets info about all products in baskets in db
         /// </summary> 
-        /// <response code="200">returns info about all products in baskets in db</response>
-        /// <response code="500">server error</response>
+        /// <response code="200">Returns info about all products in baskets in db</response>
+        /// <response code="500">Server error</response>
         [HttpGet("AllProductsInBasket")]
         public async Task<IActionResult> GetAllProductsInBasket()
         {
@@ -38,9 +38,9 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         /// <summary>
         /// Gets info about all products in baskets in db for certain user
         /// </summary> 
-        /// <param name="username">id of payment basket</param>
-        /// <response code="200">returns info about all products in baskets in db</response>
-        /// <response code="500">server error</response>
+        /// <param name="username">First name of user whose products in basket need to be shown</param>
+        /// <response code="200">Returns info about all products in baskets in db</response>
+        /// <response code="500">Server error</response>
         [HttpGet("GetUsersProductsInBasket")]
         public async Task<IActionResult> GetUsersProductsInBasket(string username)
         {
@@ -48,8 +48,15 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             return Ok(repoProductInBasket);
         }
 
+        /// <summary>
+        /// Adds certain product in basket for certain user
+        /// </summary> 
+        /// <param name="productName">Name of product that is being added to the basket</param>
+        /// <param name="username">First name of user who adds product in basket</param>
+        /// <response code="200">Returns info about added product in basket in db</response>
+        /// <response code="404">User with such username or product with such name not found</response>
+        /// <response code="500">Server error</response>
         [HttpPost("CreateProductInBasket")]
-
         public async Task<IActionResult> CreateProductInBasket(string productName, string username)
         {
             var product = _unitOfWork.GetRepository<Product>()
@@ -80,9 +87,15 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             }
         }
 
-
+        /// <summary>
+        /// Deletes certain product from basket for certain user
+        /// </summary> 
+        /// <param name="productName">Name of product that is being deleted from the basket</param>
+        /// <param name="username">First name of user who deletes product from basket</param>
+        /// <response code="200">Product deleted from basket successfully</response>
+        /// <response code="404">User with such username does not have product with such name in basket</response>
+        /// <response code="500">Server error</response>
         [HttpDelete("DeleteProductInBasket")]
-
         public async Task<IActionResult> DeleteProductInBasket (string productName, string username)
         {
             var findProductInBasket = await _unitOfWork.GetRepository<ProductInBasket>()

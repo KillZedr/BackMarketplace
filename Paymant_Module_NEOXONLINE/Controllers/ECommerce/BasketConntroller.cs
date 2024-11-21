@@ -22,8 +22,8 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         /// <summary>
         /// Gets info about all baskets in db
         /// </summary> 
-        /// <response code="200">returns info about all baskets in db</response>
-        /// <response code="500">server error</response>
+        /// <response code="200">Returns info about all baskets in db</response>
+        /// <response code="500">Server error</response>
         [HttpGet("AllBaskets")]
         public async Task<IActionResult> GetAllBaskets()
         {
@@ -37,10 +37,10 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         /// <summary>
         /// Creates empty basket for user
         /// </summary> 
-        /// <param name="username">name of the user that the basket will be associated with</param>
-        /// <response code="200">basket created successfully</response>
-        /// <response code="400">user with such username alredy has a basket</response>
-        /// <response code="500">server error</response>
+        /// <param name="username">Name of the user that the basket will be associated with</param>
+        /// <response code="200">Basket created successfully</response>
+        /// <response code="400">User with such username alredy has a basket</response>
+        /// <response code="500">Server error</response>
         [HttpPost("CreateBasket")]
         public async Task<IActionResult> CreateBasket(string username)
         {
@@ -64,10 +64,10 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
         /// <summary>
         /// Deletes basket for user
         /// </summary> 
-        /// <param name="guidId">id of the user whose basket should be deleted</param>
-        /// <response code="200">basket deleted successfully</response>
-        /// <response code="404">user with such id not found</response>
-        /// <response code="500">server error</response>
+        /// <param name="guidId">Id of the user whose basket should be deleted</param>
+        /// <response code="200">Basket deleted successfully</response>
+        /// <response code="404">User with such id not found</response>
+        /// <response code="500">Server error</response>
         [HttpDelete("BasketByUserId")]
         public async Task<IActionResult> DeleteBasket(Guid guidId)
         {
