@@ -8,7 +8,7 @@ using Payment.Domain.PayProduct;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class ProductInBasketController : ControllerBase
     {

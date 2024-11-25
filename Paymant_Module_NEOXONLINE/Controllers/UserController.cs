@@ -12,7 +12,7 @@ using System.Net;
 
 namespace Paymant_Module_NEOXONLINE.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {

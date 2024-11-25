@@ -9,7 +9,7 @@ using Payment.Domain.PayProduct;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class SubscriptionController : ControllerBase
     {
@@ -20,7 +20,12 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             _unitOfWork = unitOfWork;
         }
 
-
+        /// <summary>
+        /// Retrieves all subscriptions with their associated products.
+        /// </summary>
+        /// <returns>A list of all subscriptions with product details.</returns>
+        /// <response code="200">Successfully retrieved all subscriptions.</response>
+        /// <response code="500">An internal server error occurred.</response>
         [HttpGet("AllSubscriptions")]
 
         public async Task<IActionResult> GetAllSubscriptions()
@@ -29,7 +34,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 
             return Ok(subscriptions);
         }
-
+        /// <summary>
+        /// Retrieves all subscriptions associated with a specific product name.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <returns>The subscriptions associated with the specified product.</returns>
+        /// <response code="200">Successfully retrieved the subscriptions for the product.</response>
+        /// <response code="400">No product with the specified name was found.</response>
+        /// <response code="500">An internal server error occurred.</response>
         [HttpGet("AllSubscriptionsByProduct")]
 
         public async Task<IActionResult> GetAllSubscriptionsByProduct(string productName)
@@ -46,7 +58,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
                 return BadRequest(new { message = $"Invalid source data. Not Found Product With {productName} Name" });
             }
         }
-
+        /// <summary>
+        /// Creates a new subscription for a specified product and user.
+        /// </summary>
+        /// <param name="subscription">The subscription details, including User ID, Product ID, and IsPaid status.</param>
+        /// <returns>The created subscription.</returns>
+        /// <response code="200">Subscription successfully created.</response>
+        /// <response code="400">Invalid data was provided (e.g., product or user not found).</response>
+        /// <response code="500">An internal server error occurred.</response>
         [HttpPost("NewSubscription")]
 
         public async Task<IActionResult> CreateSubscription([FromForm] SubscriptionCreateOrUpdateDTO subscription)
@@ -65,22 +84,22 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             var result = new Subscription();
 
             if (subscriptionProduct == null)
-            {            
-                    var subscriptionNew = new Subscription
-                    {
-                        StartDate = DateTime.UtcNow,
-                        EndDate = DateTime.UtcNow.AddMonths(1),
-                        IsPaid = subscription.IsPaid,
-                        Product = findProduct,
-                        UserId = findUser.Id
+            {
+                var subscriptionNew = new Subscription
+                {
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddMonths(1),
+                    IsPaid = subscription.IsPaid,
+                    Product = findProduct,
+                    UserId = findUser.Id
 
-                    };
+                };
 
-                    var repoSubscription = _unitOfWork.GetRepository<Subscription>();
-                    repoSubscription.Create(subscriptionNew);
-                    await _unitOfWork.SaveShangesAsync();
-                    return Ok(subscriptionNew);
-                
+                var repoSubscription = _unitOfWork.GetRepository<Subscription>();
+                repoSubscription.Create(subscriptionNew);
+                await _unitOfWork.SaveShangesAsync();
+                return Ok(subscriptionNew);
+
 
             }
             else
@@ -101,10 +120,18 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             }
         }
 
+        
 
+        /// <summary>
+        /// Deletes a subscription by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the subscription to delete.</param>
+        /// <returns>The result of the deletion process.</returns>
+        /// <response code="200">Subscription successfully deleted.</response>
+        /// <response code="400">Subscription with the specified ID was not found.</response>
+        /// <response code="500">An internal server error occurred.</response>
 
-
-            [HttpDelete("Subscription")]
+        [HttpDelete("Subscription")]
 
         public async Task<IActionResult> DeleteSubcription(int id)
         {

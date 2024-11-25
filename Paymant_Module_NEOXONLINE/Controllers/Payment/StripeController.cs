@@ -18,7 +18,7 @@ using Stripe.V2;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class StripeController : ControllerBase
     {
@@ -462,7 +462,43 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
                 return BadRequest();
             }
         }
-
+        /// <summary>
+        /// Adds or updates a payment fee for a specific payment method and currency.
+        /// </summary>
+        /// <param name="feeDto">
+        /// The payment fee data transfer object containing details of the fee:
+        /// <list type="bullet">
+        /// <item><description><c>PaymentMethod</c>: The payment method (e.g., Credit Card, PayPal).</description></item>
+        /// <item><description><c>PercentageFee</c>: The percentage fee to be applied (e.g., 2.5 for 2.5%).</description></item>
+        /// <item><description><c>FixedFee</c>: The fixed fee amount to be added (e.g., 1.50 for 1.50 in the given currency).</description></item>
+        /// <item><description><c>Currency</c>: The currency for which the fee is applied (e.g., USD, EUR).</description></item>
+        /// </list>
+        /// </param>
+        /// <returns>
+        /// A JSON response with the following possible outcomes:
+        /// <list type="table">
+        /// <listheader>
+        /// <term>Status Code</term>
+        /// <description>Description</description>
+        /// </listheader>
+        /// <item>
+        /// <term><c>200 OK</c></term>
+        /// <description>Fee added or updated successfully. Contains a success message.</description>
+        /// </item>
+        /// <item>
+        /// <term><c>400 Bad Request</c></term>
+        /// <description>The input data is null or invalid. Contains an error message.</description>
+        /// </item>
+        /// <item>
+        /// <term><c>409 Conflict</c></term>
+        /// <description>A payment fee with the same method and currency already exists. Contains an error message.</description>
+        /// </item>
+        /// <item>
+        /// <term><c>500 Internal Server Error</c></term>
+        /// <description>An unexpected error occurred. Includes error details and inner exception messages.</description>
+        /// </item>
+        /// </list>
+        /// </returns>
         [HttpPost("AddOrUpdatePaymentFee")]
         public async Task<IActionResult> AddOrUpdatePaymentFee([FromBody] PaymentFeeDto feeDto)
         {

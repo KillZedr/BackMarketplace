@@ -10,21 +10,37 @@ using Stripe;
 
 namespace Paymant_Module_NEOXONLINE.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class SepaController : ControllerBase
     {
         private readonly IStripeService _stripeService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<SepaController> _logger;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SepaController"/> class.
+        /// </summary>
+        /// <param name="stripeService">The Stripe service for processing payments.</param>
+        /// <param name="unitOfWork">Unit of work for data access.</param>
+        /// <param name="logger">Logger for error logging and diagnostics.</param>
         public SepaController(IStripeService stripeService, IUnitOfWork unitOfWork, ILogger<SepaController> logger)
         {
             _stripeService = stripeService;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
-
+        /// <summary>
+        /// Processes a SEPA payment for a specific basket.
+        /// </summary>
+        /// <param name="sepaRequest">The SEPA payment request details.</param>
+        /// <param name="basketId">The ID of the payment basket.</param>
+        /// <returns>
+        /// A JSON response containing:
+        /// - <see cref="OkObjectResult"/>: On success, includes payment result details (e.g., transaction ID and receipt URL).
+        /// - <see cref="AcceptedResult"/>: If payment is still processing.
+        /// - <see cref="BadRequestObjectResult"/>: If basket data is invalid or payment fails.
+        /// - <see cref="NotFoundObjectResult"/>: If the basket with the given ID does not exist.
+        /// </returns>
         [HttpPost("sepa")]
         public async Task<IActionResult> ProcessSepaPayment([FromForm] SepaPaymentRequestDto sepaRequest, [FromQuery] int basketId)
         {
@@ -74,7 +90,16 @@ namespace Paymant_Module_NEOXONLINE.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Creates a SEPA donation.
+        /// </summary>
+        /// <param name="request">The SEPA donation request containing amount, IBAN, and customer ID.</param>
+        /// <returns>
+        /// A JSON response containing:
+        /// - <see cref="OkObjectResult"/>: On success, includes donation result details (e.g., transaction ID and receipt URL).
+        /// - <see cref="AcceptedResult"/>: If the donation is still processing.
+        /// - <see cref="BadRequestObjectResult"/>: If input data is invalid or the donation fails.
+        /// </returns>
         [HttpPost("create-donation")]
         public async Task<IActionResult> CreateSepaDonation([FromBody] SepaDonationRequestDto request)
         {

@@ -2,7 +2,7 @@
 
 namespace Paymant_Module_NEOXONLINE.Controllers.PayPalC
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     public class PayPalPageController : Controller
     {
         // Метод для отображения страницы "htmlpage.html" с использованием абсолютного пути

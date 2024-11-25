@@ -7,7 +7,7 @@ using Payment.Domain.Identity;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class BasketConntroller : ControllerBase
     {

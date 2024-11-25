@@ -5,7 +5,7 @@ using ILogger = Serilog.ILogger;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.CurrancyLayer
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class CurrencyLayerController : ControllerBase
     {

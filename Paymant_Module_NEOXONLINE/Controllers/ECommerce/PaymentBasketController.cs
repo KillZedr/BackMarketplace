@@ -6,7 +6,7 @@ using Payment.Domain.ECommerce;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class PaymentBasketController : ControllerBase
     {
@@ -58,7 +58,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
             }
         }
 
-
+        /// <summary>
+        /// Creates a new payment basket for the specified basket.
+        /// </summary>
+        /// <param name="basketId">The ID of the basket for which the payment basket will be created.</param>
+        /// <returns>The created payment basket.</returns>
+        /// <response code="200">Payment basket successfully created.</response>
+        /// <response code="400">A payment basket for the specified basket already exists.</response>
+        /// <response code="500">An internal server error occurred.</response>
 
         [HttpPost("Payment")]
 
@@ -105,7 +112,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers.ECommerce
 
             }
         }
-
+        /// <summary>
+        /// Updates the total price (Amount) of an existing payment basket.
+        /// </summary>
+        /// <param name="idPaymentBasket">The ID of the payment basket to update.</param>
+        /// <returns>The updated payment basket details.</returns>
+        /// <response code="200">Successfully updated the payment basket price.</response>
+        /// <response code="400">Payment basket with the specified ID was not found.</response>
+        /// <response code="500">An internal server error occurred.</response>
         [HttpPut("UpdatePrice")]
         public async Task<IActionResult> UpdatePricePaymentBasket([FromQuery] int idPaymentBasket)
         {

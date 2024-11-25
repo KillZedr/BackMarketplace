@@ -6,7 +6,7 @@ using Payment.Domain.PayProduct;
 namespace Payment_Module_NEOXONLINE.Controllers.PayProduct
 {
 
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
     {

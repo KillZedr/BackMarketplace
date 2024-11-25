@@ -7,14 +7,19 @@ using System.Threading.Tasks;
 
 namespace Paymant_Module_NEOXONLINE.Controllers.Payment
 {
-    [Route("api/[controller]")]
+    [Route("billing/swagger/api/[controller]")]
     [ApiController]
     public class GooglePayController : ControllerBase
     {
         private readonly IStripeService _stripeService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<GooglePayController> _logger;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GooglePayController"/> class.
+        /// </summary>
+        /// <param name="stripeService">Service for processing payments through Stripe.</param>
+        /// <param name="unitOfWork">Unit of work for data access.</param>
+        /// <param name="logger">Logger for error handling and diagnostics.</param>
         public GooglePayController(IStripeService stripeService, IUnitOfWork unitOfWork, ILogger<GooglePayController> logger)
         {
             _stripeService = stripeService;
@@ -22,7 +27,18 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             _logger = logger;
         }
 
-
+        /// <summary>
+        /// Processes a Google Pay payment for a specific basket.
+        /// </summary>
+        /// <param name="basketId">The ID of the payment basket.</param>
+        /// <param name="googlePayToken">The Google Pay token in JSON format.</param>
+        /// <returns>
+        /// A JSON response with:
+        /// - <see cref="OkObjectResult"/>: If the payment was successfully completed.
+        /// - <see cref="AcceptedResult"/>: If the payment is still processing.
+        /// - <see cref="BadRequestObjectResult"/>: If input data is invalid or an error occurs during token parsing or payment processing.
+        /// - <see cref="NotFoundObjectResult"/>: If the basket with the given ID is not found.
+        /// </returns>
         [HttpPost("googlepay")]
         public async Task<IActionResult> ProcessGooglePayPayment([FromQuery] int basketId, [FromQuery] string googlePayToken)
         {
@@ -77,7 +93,19 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         }
 
 
-
+        /// <summary>
+        /// Creates a Google Pay donation.
+        /// </summary>
+        /// <param name="amount">The donation amount.</param>
+        /// <param name="currency">The currency of the donation (e.g., USD, EUR).</param>
+        /// <param name="googlePayToken">The Google Pay token in JSON format.</param>
+        /// <param name="customerId">The customer ID for the donation.</param>
+        /// <returns>
+        /// A JSON response with:
+        /// - <see cref="OkObjectResult"/>: If the donation was successfully created.
+        /// - <see cref="AcceptedResult"/>: If the donation is still processing.
+        /// - <see cref="BadRequestObjectResult"/>: If input data is invalid or an error occurs during token parsing or donation creation.
+        /// </returns>
         [HttpPost("create-donation")]
         public async Task<IActionResult> CreateGooglePayDonation([FromQuery] decimal amount, [FromQuery] string currency, [FromQuery] string googlePayToken, [FromQuery] string customerId)
         {
