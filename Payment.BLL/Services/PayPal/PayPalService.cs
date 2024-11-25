@@ -138,8 +138,8 @@ namespace Payment.BLL.Services.PayPal
                     },
                     redirect_urls = new RedirectUrls
                     {
-                        cancel_url = "https://localhost:7257/api/paypal/cancel",
-                        return_url = "https://localhost:7257/api/paypal/execute-payment"
+                        cancel_url = "http://localhost:5000/billing/swagger/api/paypal/cancel",
+                        return_url = "http://localhost:5000/billing/swagger/api/paypal/execute-payment"
                     }
                 };
                 var createdPayment = payment.Create(_apiContext);
@@ -173,8 +173,8 @@ namespace Payment.BLL.Services.PayPal
         },
                 redirect_urls = new RedirectUrls
                 {
-                    cancel_url = "https://localhost:7257/api/paypal/cancel",
-                    return_url = "https://localhost:7257/api/paypal/execute-donation"
+                    cancel_url = "http://localhost:5000/billing/swagger/api/paypal/cancel",
+                    return_url = "http://localhost:5000/billing/swagger/api/paypal/execute-donation"
                 }
             };
 
@@ -211,8 +211,8 @@ namespace Payment.BLL.Services.PayPal
             },
                 redirect_urls = new RedirectUrls
                 {
-                    cancel_url = "https://localhost:7257/api/paypal/cancel",
-                    return_url = "https://localhost:7257/api/paypal/execute-payment"
+                    cancel_url = "http://localhost:5000/billing/swagger/api/paypal/cancel",
+                    return_url = "http://localhost:5000/billing/swagger/api/paypal/execute-payment"
                 }
             };
 
