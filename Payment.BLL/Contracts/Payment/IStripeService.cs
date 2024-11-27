@@ -16,18 +16,19 @@ public interface IStripeService : IService
     Task<StripeList<Product>> GetAllStripeProductsAsync();
     Task<Product> GetStripeProductAsync(string id);
     Task<string?> GetStripePriceIdByProductIdAsync(string stripeProductId);
+    Task<Customer?> GetStripeCustomerAsync(string id);
 
     Task<string> CreateStripeProductAsync(ProductCreationDto productDto);
     Task<string> CreateStripePriceAsync(string productId, decimal priceAmount);
     Task<string> CreateCheckoutSessionAsync(List<string> prices, string customerId);
     Customer CreateStripeCustomer(UserDto userDto);
-    Task<string> CreateRefundAsync(string paymentIntentId, long amount, string reason);
+    Task<string?> CreateRefundAsync(string paymentIntentId, long amount, string reason);
     Task<string> CreateDonationAsync(decimal amount, string currency, string customerId);
 
-    Task<bool> DeleteStripeProductAsync(string productId);
-    Task<bool> ArchiveStripeProductAsync(string productId);
+    Task<bool?> DeleteStripeProductAsync(string productId);
+    Task<bool?> ArchiveStripeProductAsync(string productId);
 
-    Task<bool> ActivateStripeProductAsync(string id);
+    Task<bool?> ActivateStripeProductAsync(string id);
 
     Task<Stripe.Product> UpdateStripeProductAsync(string id, ProductCreationDto productDto);
 
