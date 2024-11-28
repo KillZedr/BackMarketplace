@@ -49,16 +49,16 @@ namespace Paymant_Module_NEOXONLINE.Controllers
         /// <response code="404">User with such username not found</response>
         /// <response code="500">Server error</response>
         [HttpGet("GetUserByFirstName")]
-        public async Task<IActionResult> GetUserByFirstName(string username)
+        public async Task<IActionResult> GetUserByFirstName(Guid guidIdUser)
         {
-            var user = _unitOfWork.GetRepository<User>().AsQueryable().Where(u => u.FirstName.Equals(username)).Include(u => u.Basket).First();
+            var user = await _unitOfWork.GetRepository<User>().AsQueryable().Where(u => u.Id.Equals(guidIdUser)).Include(u => u.Basket).FirstOrDefaultAsync();
             if (user != null)
             {
                 return Ok(user);
             }
             else
             {
-                return NotFound($"user with name {username} not found ");
+                return NotFound($"user with id {guidIdUser} not found ");
             }
         }
 
@@ -68,23 +68,55 @@ namespace Paymant_Module_NEOXONLINE.Controllers
         /// <response code="200">Returns info about created user</response>
         /// <response code="500">Server error</response>
         [HttpPost("CreateUser")]
-        public async Task<IActionResult> CreateUser(UserCreationDto userCreationDto)
+        public async Task<IActionResult> CreateUser([FromQuery] UserCreationDto userCreationDto)
         {
+            // Проверка на обязательные поля
+            if (string.IsNullOrEmpty(userCreationDto.FirstName))
+            {
+                return BadRequest("First name is required.");
+            }
+
+            if (string.IsNullOrEmpty(userCreationDto.LastName))
+            {
+                return BadRequest("Last name is required.");
+            }
+
+            if (string.IsNullOrEmpty(userCreationDto.Email))
+            {
+                return BadRequest("Email is required.");
+            }
+
+            if (string.IsNullOrEmpty(userCreationDto.Сountry))
+            {
+                return BadRequest("Country is required.");
+            }
+
+            if (string.IsNullOrEmpty(userCreationDto.Address))
+            {
+                return BadRequest("Address is required.");
+            }
+
+            if (string.IsNullOrEmpty(userCreationDto.PhoneNumber))
+            {
+                return BadRequest("Phone number is required.");
+            }
+
+            // Создание нового пользователя
             var newUser = new User
             {
-                //todo
-                //check if first name is unique
                 FirstName = userCreationDto.FirstName,
                 LastName = userCreationDto.LastName,
                 Email = userCreationDto.Email,
                 Сountry = userCreationDto.Сountry,
                 Address = userCreationDto.Address,
                 PhoneNumber = userCreationDto.PhoneNumber,
-                //Basket = new List<Basket>(),
             };
+
+            // Создание нового объекта корзины для пользователя
             _unitOfWork.GetRepository<User>().Create(newUser);
             _unitOfWork.GetRepository<Basket>().Create(new Basket() { User = newUser });
 
+            // Сохранение изменений в базе данных
             await _unitOfWork.SaveShangesAsync();
 
             return Ok(newUser);
@@ -145,28 +177,67 @@ namespace Paymant_Module_NEOXONLINE.Controllers
         /// <response code="404">User with such username not found</response>
         /// <response code="500">Server error</response>
         [HttpPut("UpdateUser")]
-        public async Task<IActionResult> UpdateUser([FromForm] UserCreationDto userDto)
+        public async Task<IActionResult> UpdateUser([FromQuery] Guid guidIdUser,[FromForm] UserCreationDto userDto)
         {
+            // Извлечение пользователя из базы данных
             var user = await _unitOfWork.GetRepository<User>()
                 .AsReadOnlyQueryable()
-                .FirstOrDefaultAsync(u => u.FirstName.Equals(userDto.FirstName));
+                .FirstOrDefaultAsync(u => u.Id.Equals(guidIdUser));
+
             if (user != null)
             {
-                user.FirstName = userDto.FirstName;
-                user.LastName = userDto.LastName;
-                user.Email = userDto.Email;
-                user.Сountry = userDto.Сountry;
-                user.Address = userDto.Address;
-                user.PhoneNumber = userDto.PhoneNumber;
+                // Возвращаем текущие данные пользователя ДО обновления
+                var userDataBeforeUpdate = new
+                {
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    user.Сountry,
+                    user.Address,
+                    user.PhoneNumber
+                };
 
+                // Теперь выполняем обновление данных пользователя
+                if (!string.IsNullOrEmpty(userDto.FirstName))
+                {
+                    user.FirstName = userDto.FirstName;
+                }
+                if (!string.IsNullOrEmpty(userDto.LastName))
+                {
+                    user.LastName = userDto.LastName;
+                }
+                if (!string.IsNullOrEmpty(userDto.Email))
+                {
+                    user.Email = userDto.Email;
+                }
+                if (!string.IsNullOrEmpty(userDto.Сountry))
+                {
+                    user.Сountry = userDto.Сountry;
+                }
+                if (!string.IsNullOrEmpty(userDto.Address))
+                {
+                    user.Address = userDto.Address;
+                }
+                if (!string.IsNullOrEmpty(userDto.PhoneNumber))
+                {
+                    user.PhoneNumber = userDto.PhoneNumber;
+                }
+
+                // Сохранение изменений в базе данных
                 _unitOfWork.GetRepository<User>().Update(user);
                 await _unitOfWork.SaveShangesAsync();
 
-                return Ok(user);
+                // Возвращаем данные пользователя ДО и ПОСЛЕ обновления
+                return Ok(new
+                {
+                    message = "User updated successfully",
+                    userDataBeforeUpdate,  // Данные до обновления
+                    updatedData = user     // Обновленные данные
+                });
             }
             else
             {
-                return NotFound($"user with name {userDto.FirstName} not found");
+                return NotFound($"User with id {guidIdUser} not found");
             }
         }
 
@@ -177,14 +248,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers
         /// <response code="404">User with such username not found</response>
         /// <response code="500">Server error</response>
         [HttpDelete("DeleteUser")]
-        public async Task<IActionResult> DeleteUser(string userName)
+        public async Task<IActionResult> DeleteUser(Guid userId)
         {
             var deletedUser = await _unitOfWork.GetRepository<User>()
                 .AsQueryable()
-                .FirstOrDefaultAsync(u => u.FirstName.Equals(userName));
+                .FirstOrDefaultAsync(u => u.Id.Equals(userId));
             if (deletedUser == null)
             {
-                return NotFound(new { message = $"Invalid source data. Not Found {userName}" });
+                return NotFound(new { message = $"Invalid source data. Not Found {userId}" });
             }
             else
             {

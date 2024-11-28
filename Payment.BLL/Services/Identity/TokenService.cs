@@ -48,8 +48,9 @@ namespace Payment.BLL.Contracts
         {
             return new User
             {
-                Id = Guid.Parse((claimsList.Where(claim => claim.Type.Equals("id")).First()).Value),
-                FirstName = (claimsList.Where(claim => claim.Type.Equals("preferred_username")).First()).Value,
+                /*Id = Guid.Parse((claimsList.Where(claim => claim.Type.Equals("id")).First()).Value),*/
+                FirstName = (claimsList.Where(claim => claim.Type.Equals("FirstName")).First()).Value,
+                LastName = (claimsList.Where(claim => claim.Type.Equals("LastName")).First()).Value,
                 Email = (claimsList.Where(claim => claim.Type.Equals("email")).First()).Value,
                 Сountry = (claimsList.Where(claim => claim.Type.Equals("country")).First()).Value,
                 Address = (claimsList.Where(claim => claim.Type.Equals("address")).First()).Value,

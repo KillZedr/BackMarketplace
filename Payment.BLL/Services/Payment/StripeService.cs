@@ -277,95 +277,105 @@ namespace Payment.BLL.Services.Payment
                     { "TransactionType", "Donation" }
                 }
             };
-            
+
             PaymentIntent intent = await _paymentIntentService.CreateAsync(options);
 
             return intent.ClientSecret;
         }
 
-        public async Task<string> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken)
+        public async Task<PaymentResultDto> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken)
         {
+            var result = new PaymentResultDto();
             try
             {
                 if (string.IsNullOrEmpty(googlePayToken))
                 {
-                    return "Google Pay token is missing.";
+                    result.Success = false;
+                    result.Message = "Google Pay token is missing.";
+                    return result;
                 }
 
                 if (basket.Amount <= 0)
                 {
-                    return "Invalid payment amount.";
+                    result.Success = false;
+                    result.Message = "Invalid payment amount.";
+                    return result;
                 }
 
                 var paymentFee = await GetPaymentFeeByMethodAsync("card");
 
                 if (paymentFee == null)
                 {
-                    return "Payment fee configuration for 'card' is missing.";
+                    result.Success = false;
+                    result.Message = "Payment fee configuration for 'card' is missing.";
+                    return result;
                 }
 
-                // calculate the amount
-                var totalAmount = paymentFee != null
-                    ? basket.Amount + (basket.Amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee
-                    : basket.Amount;
+                var totalAmount = basket.Amount + (basket.Amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee;
 
-                // Create a PaymentMethod using the Google Pay token
                 var paymentMethodOptions = new PaymentMethodCreateOptions
                 {
                     Type = "card",
                     Card = new PaymentMethodCardOptions
                     {
-                        Token = googlePayToken 
+                        Token = googlePayToken
                     }
                 };
 
                 var paymentMethodService = new PaymentMethodService();
                 var paymentMethod = await paymentMethodService.CreateAsync(paymentMethodOptions);
 
-                //Create a PaymentIntent using the created PaymentMethod
                 var paymentIntentOptions = new PaymentIntentCreateOptions
                 {
-                    Amount = (long)(totalAmount * 100), 
+                    Amount = (long)(totalAmount * 100),
                     Currency = "eur",
-                    PaymentMethod = paymentMethod.Id, 
+                    PaymentMethod = paymentMethod.Id,
                     Description = $"Google Pay payment for Basket ID: {basket.BasketId} on {DateTime.UtcNow}",
                     Metadata = new Dictionary<string, string>
-                    {
-                        { "TransactionType", "GooglePay" }
-                    },
-                    Confirm = true, // Automatically confirm the payment
-                    ReturnUrl = "https://docs.stripe.com", 
-                    AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
-                    {
-                        Enabled = true,
-                    }
+            {
+                { "TransactionType", "GooglePay" }
+            },
+                    Confirm = true,
+                    ReturnUrl = "https://docs.stripe.com"
                 };
 
                 var paymentIntentService = new PaymentIntentService();
                 var paymentIntent = await paymentIntentService.CreateAsync(paymentIntentOptions);
 
-                // Check the status of the PaymentIntent and return the appropriate message
                 if (paymentIntent.Status == "succeeded")
                 {
-                    _logger.LogInformation("Google Pay payment succeeded for Basket ID: {BasketId}", basket.BasketId);
-                    return $"Payment completed successfully. Transaction ID: {paymentIntent.Id}";
+                    var chargeService = new ChargeService();
+                    var charges = await chargeService.ListAsync(new ChargeListOptions
+                    {
+                        PaymentIntent = paymentIntent.Id
+                    });
+
+                    var charge = charges.Data.FirstOrDefault();
+                    result.ReceiptUrl = charge?.ReceiptUrl;
+
+                    result.Success = true;
+                    result.Message = "Payment completed successfully.";
+                    result.TransactionId = paymentIntent.Id;
                 }
-                else if (paymentIntent.Status == "pending" || paymentIntent.Status == "processing")
+                else if (paymentIntent.Status == "processing")
                 {
-                    _logger.LogInformation("Google Pay payment is processing for Basket ID: {BasketId}", basket.BasketId);
-                    return $"Payment is processing. Transaction ID: {paymentIntent.Id}, Status: {paymentIntent.Status}";
+                    result.Success = false;
+                    result.Message = "Payment is processing.";
+                    result.TransactionId = paymentIntent.Id;
                 }
                 else
                 {
-                    _logger.LogWarning("Google Pay payment failed for Basket ID: {BasketId}, Status: {Status}", basket.BasketId, paymentIntent.Status);
-                    return $"Payment failed. Status: {paymentIntent.Status}";
+                    result.Success = false;
+                    result.Message = $"Payment failed. Status: {paymentIntent.Status}";
                 }
             }
             catch (StripeException ex)
             {
-                _logger.LogError(ex, "Error processing Google Pay payment for Basket ID: {BasketId}", basket.BasketId);
-                return $"Error processing payment: {ex.Message}";
+                result.Success = false;
+                result.Message = $"Error processing payment: {ex.Message}";
             }
+
+            return result;
         }
 
         public async Task<PaymentResultDto> ProcessSepaPaymentAsync(PaymentBasket basket, SepaPaymentRequestDto sepaRequest)
@@ -506,33 +516,40 @@ namespace Payment.BLL.Services.Payment
             }
         }
 
-        public async Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId)
+        public async Task<PaymentResultDto> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId)
         {
+            var result = new PaymentResultDto();
             try
             {
                 if (amount <= 0)
                 {
-                    return "Donation amount must be greater than zero.";
+                    result.Success = false;
+                    result.Message = "Donation amount must be greater than zero.";
+                    return result;
                 }
 
                 if (string.IsNullOrEmpty(googlePayToken))
                 {
-                    return "Google Pay token is missing.";
+                    result.Success = false;
+                    result.Message = "Google Pay token is missing.";
+                    return result;
                 }
 
                 var paymentFee = await GetPaymentFeeByMethodAsync("card");
 
                 if (paymentFee == null)
                 {
-                    return "Payment fee configuration for 'card' is missing.";
+                    result.Success = false;
+                    result.Message = "Payment fee configuration for 'card' is missing.";
+                    return result;
                 }
 
-                // calculate the amount
+                // Рассчитать итоговую сумму
                 var totalAmount = paymentFee != null
                     ? amount + (amount * paymentFee.PercentageFee / 100) + paymentFee.FixedFee
                     : amount;
 
-                //  Create a PaymentMethod using the Google Pay token
+                // Создание PaymentMethod
                 var paymentMethodOptions = new PaymentMethodCreateOptions
                 {
                     Type = "card",
@@ -545,50 +562,62 @@ namespace Payment.BLL.Services.Payment
                 var paymentMethodService = new PaymentMethodService();
                 var paymentMethod = await paymentMethodService.CreateAsync(paymentMethodOptions);
 
-                // Create a PaymentIntent using the created PaymentMethod
+                // Создание PaymentIntent
                 var paymentIntentOptions = new PaymentIntentCreateOptions
                 {
-                    Amount = (long)(totalAmount * 100), 
+                    Amount = (long)(totalAmount * 100),
                     Currency = currency,
                     PaymentMethod = paymentMethod.Id,
                     Customer = customerId,
                     Description = "Google Pay donation",
                     Metadata = new Dictionary<string, string>
-                    {
-                        { "DonationType", "GooglePayDonation" },
-                        { "TransactionType", "GooglePayDonation" }
-                    },
-                    Confirm = true, // Automatically confirm
-                    ReturnUrl = "https://docs.stripe.com",  
-                    AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
-                    {
-                        Enabled = true
-                    }
+            {
+                { "DonationType", "GooglePayDonation" },
+                { "TransactionType", "GooglePayDonation" }
+            },
+                    Confirm = true,
+                    ReturnUrl = "https://docs.stripe.com"
                 };
 
                 var paymentIntentService = new PaymentIntentService();
                 var paymentIntent = await paymentIntentService.CreateAsync(paymentIntentOptions);
 
-                // Check payment status and return result
+                // Проверка статуса платежа
                 if (paymentIntent.Status == "succeeded")
                 {
-                    _logger.LogInformation("Google Pay donation succeeded. Transaction ID: {TransactionId}", paymentIntent.Id);
-                    return $"Donation completed successfully. Transaction ID: {paymentIntent.Id}";
+                    // Использование ChargeService для получения ReceiptUrl
+                    var chargeService = new ChargeService();
+                    var charges = await chargeService.ListAsync(new ChargeListOptions
+                    {
+                        PaymentIntent = paymentIntent.Id
+                    });
+
+                    var charge = charges.Data.FirstOrDefault();
+                    result.ReceiptUrl = charge?.ReceiptUrl;
+
+                    result.Success = true;
+                    result.Message = "Donation completed successfully.";
+                    result.TransactionId = paymentIntent.Id;
                 }
                 else if (paymentIntent.Status == "requires_action")
                 {
-                    return $"Additional action required to complete donation. PaymentIntent ID: {paymentIntent.Id}";
+                    result.Success = false;
+                    result.Message = "Additional action required to complete donation.";
+                    result.TransactionId = paymentIntent.Id;
                 }
                 else
                 {
-                    return $"Donation failed. PaymentIntent ID: {paymentIntent.Id}, Status: {paymentIntent.Status}";
+                    result.Success = false;
+                    result.Message = $"Donation failed. Status: {paymentIntent.Status}";
                 }
             }
             catch (StripeException ex)
             {
-                _logger.LogError(ex, "Error processing Google Pay donation.");
-                return $"Error processing donation: {ex.Message}";
+                result.Success = false;
+                result.Message = $"Error processing donation: {ex.Message}";
             }
+
+            return result;
         }
 
         public async Task<PaymentResultDto> CreateSepaDonationAsync(SepaDonationRequestDto request, string customerId)
@@ -665,7 +694,7 @@ namespace Payment.BLL.Services.Payment
                 //If the payment status is "processing", repeat the request until maxRetries
                 while (confirmedPaymentIntent.Status == "processing" && attempt < maxRetries)
                 {
-                    await Task.Delay(retryDelay); 
+                    await Task.Delay(retryDelay);
                     attempt++;
                     confirmedPaymentIntent = await paymentIntentService.GetAsync(confirmedPaymentIntent.Id);
                 }
@@ -764,5 +793,9 @@ namespace Payment.BLL.Services.Payment
             return paymentFee;
 
         }
+
+
+
+
     }
 }

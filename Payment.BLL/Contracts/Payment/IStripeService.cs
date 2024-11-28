@@ -33,9 +33,10 @@ public interface IStripeService : IService
 
     // Новые методы для поддержки Google Pay и SEPA платежей
     Task<PaymentResultDto> ProcessSepaPaymentAsync(PaymentBasket basket, SepaPaymentRequestDto sepaRequest);
-    Task<string> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken);
-    Task<string> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId);
+    Task<PaymentResultDto> ProcessGooglePayPaymentAsync(PaymentBasket basket, string googlePayToken);
+    Task<PaymentResultDto> CreateGooglePayDonationAsync(decimal amount, string currency, string googlePayToken, string customerId);
     Task<PaymentResultDto> CreateSepaDonationAsync(SepaDonationRequestDto request, string customerId);
     PaymentFee ValidateAndPreparePaymentFee(PaymentFee fee);
     Task<PaymentFee?> GetPaymentFeeByMethodAsync(string paymentMethod);
 }
+

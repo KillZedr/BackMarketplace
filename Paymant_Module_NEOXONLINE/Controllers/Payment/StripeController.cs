@@ -566,7 +566,80 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of all payment fees.
+        /// </summary>
+        /// <response code="200">
+        /// Returns the list of all payment fees. Example:
+        /// [
+        ///     {
+        ///         "PaymentMethod": "card",
+        ///         "PercentageFee": 2.5,
+        ///         "FixedFee": 1.0,
+        ///         "Currency": "USD"
+        ///     },
+        ///     {
+        ///         "PaymentMethod": "sepa_debit",
+        ///         "PercentageFee": 1.0,
+        ///         "FixedFee": 0.5,
+        ///         "Currency": "EUR"
+        ///     }
+        /// ]
+        /// </response>
+        /// <response code="404">
+        /// Returns when no payment fees are found.
+        /// Example:
+        /// {
+        ///     "message": "No payment fees found."
+        /// }
+        /// </response>
+        /// <response code="500">
+        /// Returns when an unexpected server error occurs.
+        /// Example:
+        /// {
+        ///     "error": "An unexpected error occurred.",
+        ///     "details": "Detailed error message."
+        /// }
+        /// </response>
+        /// <remarks>
+        /// This endpoint retrieves all payment fees stored in the system.
+        /// </remarks>
+        [HttpGet("GetAllPaymentFees")]
+        public async Task<IActionResult> GetAllPaymentFees()
+        {
+            try
+            {
+                // Получаем репозиторий PaymentFee
+                var repository = _unitOfWork.GetRepository<PaymentFee>();
 
+                // Получаем все записи
+                var paymentFees = await repository.AsQueryable().ToListAsync();
+
+                if (paymentFees == null || !paymentFees.Any())
+                {
+                    return NotFound(new { message = "No payment fees found." });
+                }
+
+                // Преобразуем в DTO
+                var paymentFeeDtos = paymentFees.Select(fee => new PaymentFeeDto
+                {
+                    PaymentMethod = fee.PaymentMethod,
+                    PercentageFee = fee.PercentageFee,
+                    FixedFee = fee.FixedFee,
+                    Currency = fee.Currency
+                });
+
+                return Ok(paymentFeeDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = "An unexpected error occurred.",
+                    details = ex.Message
+                });
+            }
+        }
 
     }
 }

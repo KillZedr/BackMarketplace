@@ -17,34 +17,77 @@ namespace Paymant_Module_NEOXONLINE.Controllers
         private readonly IStripeService _stripeService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<SepaController> _logger;
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SepaController"/> class.
-        /// </summary>
-        /// <param name="stripeService">The Stripe service for processing payments.</param>
-        /// <param name="unitOfWork">Unit of work for data access.</param>
-        /// <param name="logger">Logger for error logging and diagnostics.</param>
+
         public SepaController(IStripeService stripeService, IUnitOfWork unitOfWork, ILogger<SepaController> logger)
         {
             _stripeService = stripeService;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
+
         /// <summary>
-        /// Processes a SEPA payment for a specific basket.
+        /// Processes a SEPA payment for the specified basket.
         /// </summary>
-        /// <param name="sepaRequest">The SEPA payment request details.</param>
-        /// <param name="basketId">The ID of the payment basket.</param>
-        /// <returns>
-        /// A JSON response containing:
-        /// - <see cref="OkObjectResult"/>: On success, includes payment result details (e.g., transaction ID and receipt URL).
-        /// - <see cref="AcceptedResult"/>: If payment is still processing.
-        /// - <see cref="BadRequestObjectResult"/>: If basket data is invalid or payment fails.
-        /// - <see cref="NotFoundObjectResult"/>: If the basket with the given ID does not exist.
-        /// </returns>
+        /// <param name="basketId">
+        /// The ID of the basket for which the payment is processed. Example: 123
+        /// </param>
+        /// <param name="sepaRequest">
+        /// The SEPA payment request containing IBAN, IP address, and user agent.
+        /// </param>
+        /// <response code="200">
+        /// Payment success details:
+        /// {
+        ///     "success": true,
+        ///     "message": "Payment completed successfully.",
+        ///     "transactionId": "pi_1QOGMWBpHuilOt7EG4jlfNXJ",
+        ///     "receiptUrl": "https://pay.stripe.com/receipts/..."
+        /// }
+        /// </response>
+        /// <response code="202">
+        /// Payment is being processed and may take some time to complete:
+        /// {
+        ///     "success": true,
+        ///     "message": "Payment is still processing.",
+        ///     "transactionId": "pi_1QOGMWBpHuilOt7EG4jlfNXJ",
+        ///     "receiptUrl": null
+        /// }
+        /// </response>
+        /// <response code="400">
+        /// Invalid request due to incorrect data or missing information:
+        /// {
+        ///     "message": "Invalid basket data or missing user information."
+        /// }
+        /// </response>
+        /// <response code="404">
+        /// The specified basket was not found:
+        /// {
+        ///     "message": "Basket with ID 123 not found."
+        /// }
+        /// </response>
+        /// <response code="500">
+        /// Unexpected server error during payment processing:
+        /// {
+        ///     "message": "An unexpected error occurred while processing the payment."
+        /// }
+        /// </response>
+        /// <remarks>
+        /// <b>Example Request:</b>
+        /// <br/>
+        /// POST /api/Sepa/sepa
+        /// <br/>
+        /// Content-Type: multipart/form-data
+        /// <br/>
+        /// {
+        ///     "basketId": 123,
+        ///     "iban": "DE89370400440532013000",
+        ///     "ipAddress": "192.168.1.1",
+        ///     "userAgent": "Mozilla/5.0"
+        /// }
+        /// </remarks>
         [HttpPost("sepa")]
         public async Task<IActionResult> ProcessSepaPayment([FromForm] SepaPaymentRequestDto sepaRequest, [FromQuery] int basketId)
         {
-          
+
             var basket = _unitOfWork.GetRepository<PaymentBasket>()
                 .AsQueryable()
                 .Include(pb => pb.Basket)
@@ -91,17 +134,72 @@ namespace Paymant_Module_NEOXONLINE.Controllers
         }
 
         /// <summary>
-        /// Creates a SEPA donation.
+        /// Processes a SEPA donation for the specified customer and payment details.
         /// </summary>
-        /// <param name="request">The SEPA donation request containing amount, IBAN, and customer ID.</param>
-        /// <returns>
-        /// A JSON response containing:
-        /// - <see cref="OkObjectResult"/>: On success, includes donation result details (e.g., transaction ID and receipt URL).
-        /// - <see cref="AcceptedResult"/>: If the donation is still processing.
-        /// - <see cref="BadRequestObjectResult"/>: If input data is invalid or the donation fails.
-        /// </returns>
+        /// <param name="request">
+        /// The SEPA donation request containing the following fields:
+        /// <list type="bullet">
+        /// <item><term>Amount</term> - The donation amount. Example: 50.75</item>
+        /// <item><term>Currency</term> - The currency of the donation. Example: "EUR"</item>
+        /// <item><term>SepaRequest</term> - Contains SEPA payment details:
+        /// <list type="bullet">
+        /// <item><term>Iban</term> - IBAN of the payer. Example: "DE89370400440532013000"</item>
+        /// <item><term>IpAddress</term> - Client IP address. Example: "192.168.1.1"</item>
+        /// <item><term>UserAgent</term> - User agent string of the client. Example: "Mozilla/5.0"</item>
+        /// </list>
+        /// </item>
+        /// <item><term>CustomerId</term> - The ID of the Stripe customer. Example: "cus_12345"</item>
+        /// </list>
+        /// </param>
+        /// <response code="200">
+        /// Donation success details:
+        /// {
+        ///     "success": true,
+        ///     "message": "Donation completed successfully.",
+        ///     "transactionId": "pi_1QOGMWBpHuilOt7EG4jlfNXJ",
+        ///     "receiptUrl": "https://pay.stripe.com/receipts/..."
+        /// }
+        /// </response>
+        /// <response code="202">
+        /// Donation is being processed:
+        /// {
+        ///     "success": false,
+        ///     "message": "Donation is still processing.",
+        ///     "transactionId": "pi_1QOGMWBpHuilOt7EG4jlfNXJ"
+        /// }
+        /// </response>
+        /// <response code="400">
+        /// Invalid request due to missing or invalid data:
+        /// {
+        ///     "message": "Invalid donation amount, missing IBAN, or customer ID."
+        /// }
+        /// </response>
+        /// <response code="500">
+        /// Unexpected server error during donation processing:
+        /// {
+        ///     "message": "An unexpected error occurred while processing the donation."
+        /// }
+        /// </response>
+        /// <remarks>
+        /// <b>Example Request:</b>
+        /// <br/>
+        /// POST /api/Sepa/create-donation
+        /// <br/>
+        /// Content-Type: application/json
+        /// <br/>
+        /// {
+        ///     "amount": 50.75,
+        ///     "currency": "EUR",
+        ///     "sepaRequest": {
+        ///         "iban": "DE89370400440532013000",
+        ///         "ipAddress": "192.168.1.1",
+        ///         "userAgent": "Mozilla/5.0"
+        ///     },
+        ///     "customerId": "cus_RDOMbImfVQlG1b"
+        /// }
+        /// </remarks>
         [HttpPost("create-donation")]
-        public async Task<IActionResult> CreateSepaDonation([FromBody] SepaDonationRequestDto request)
+        public async Task<IActionResult> CreateSepaDonation([FromForm] SepaDonationRequestDto request)
         {
             if (request.Amount <= 0 || string.IsNullOrEmpty(request.SepaRequest?.Iban) || string.IsNullOrEmpty(request.CustomerId))
             {
@@ -140,11 +238,5 @@ namespace Paymant_Module_NEOXONLINE.Controllers
                 });
             }
         }
-
-
-
-
-
-
     }
 }

@@ -11,7 +11,7 @@ namespace Payment.Domain.Identity
     {
         //public Guid? Id { get; set; } // Guid 
         public required string FirstName { get; set; }
-        public string? LastName { get; set; }
+        public required string? LastName { get; set; }
         public required string Email { get; set; }
         public required string Сountry { get; set; }
         public required string Address { get; set; }
