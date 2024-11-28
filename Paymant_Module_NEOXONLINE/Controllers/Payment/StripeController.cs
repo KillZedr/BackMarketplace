@@ -11,6 +11,7 @@ using Payment.Domain.PayProduct;
 using Payment.Domain.Stripe;
 using Stripe;
 using Stripe.Checkout;
+using Stripe.Climate;
 using Stripe.FinancialConnections;
 using Stripe.Terminal;
 using Stripe.V2;
@@ -108,30 +109,32 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         /// <param name="productIds">List of product id in stripe</param>
         /// <param name="customerId">Customer id in stripe</param>
         /// <response code="200">Returns the payment link</response>
-        /// <response code="404">One or more products have no prices</response>
+        /// <response code="404">One or more products have no prices or customer not found</response>
         /// <response code="500">Server error</response>
         [HttpPost("CreateCheckoutSession")]
         public async Task<IActionResult> CreateCheckoutSession(List<string> productIds, string customerId)
         {
             try
             {
-                //todo
-                //check if a product exists
-                //check if an user exists
-                List<string> prices = new List<string>();
-                foreach (var productId in productIds)
+                var customer = _stripeService.GetStripeCustomerAsync(customerId);
+                if (customer != null)
                 {
-                    var price = await _stripeService.GetStripePriceIdByProductIdAsync(productId);
-                    if (price != null)
+                    List<string> prices = new List<string>();
+                    foreach (var productId in productIds)
                     {
-                        prices.Add(price);
+                        var price = await _stripeService.GetStripePriceIdByProductIdAsync(productId);
+                        if (price != null)
+                        {
+                            prices.Add(price);
+                        }
+                        else
+                        {
+                            return NotFound($"price for product {productId} not found");
+                        }
                     }
-                    else
-                    {
-                        return NotFound($"price for product {productId} not found");
-                    }
+                    return Ok(await _stripeService.CreateCheckoutSessionAsync(prices, customerId));
                 }
-                return Ok(await _stripeService.CreateCheckoutSessionAsync(prices, customerId));
+                return NotFound($"customer {customerId} not found");
             }
             catch (Exception ex)
             {
@@ -162,15 +165,19 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         /// </summary> 
         /// <param name="id">Product id in stripe</param>
         /// <response code="200">Returns updated product</response>
+        /// <response code="404">Product with such id not found</response>
         /// <response code="500">Server error</response>
         [HttpPut("UpdateProduct")]
         public async Task<IActionResult> UpdateProduct(string id, ProductCreationDto productDto)
         {
             try
             {
-                //todo
-                //check if product id exists
-                return Ok(await _stripeService.UpdateStripeProductAsync(id, productDto));
+                var product = _stripeService.GetStripeProductAsync(id);
+                if (product != null)
+                {
+                    return Ok(await _stripeService.UpdateStripeProductAsync(id, productDto));
+                }
+                return NotFound($"product {id} not found");
             }
             catch (Exception ex)
             {
@@ -183,13 +190,22 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         /// </summary> 
         /// <param name="id">Product id in stripe</param>
         /// <response code="200">Returns updated product</response>
+        /// <response code="404">Product with such id not found</response>
         /// <response code="500">Server error</response>
         [HttpPatch("ActivateProduct")]
         public async Task<IActionResult> ActivateProduct(string id)
         {
             try
             {
-                return Ok(await _stripeService.ActivateStripeProductAsync(id));
+                var result = await _stripeService.ActivateStripeProductAsync(id);
+                if (result != null)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound($"product {id} not found");
+                }
             }
             catch (Exception ex)
             {
@@ -203,13 +219,22 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         /// <remarks>Archive product to disable so that it can’t be added to new invoices or subscriptions. any existing subscriptions that use the product remain active until they’re canceled and any existing payment links that use the product are deactivated. You can’t delete products that have an associated price, but you can archive them.</remarks>
         /// <param name="id">Product id in stripe</param>
         /// <response code="200">Returns true if product archived successfully</response>
+        /// <response code="404">Product with such id not found</response>
         /// <response code="500">Server error</response>
         [HttpDelete("ArchiveProduct")]
         public async Task<IActionResult> ArchiveProduct(string productId)
         {
             try
             {
-                return Ok(await _stripeService.ArchiveStripeProductAsync(productId));
+                var result = await _stripeService.ArchiveStripeProductAsync(productId);
+                if (result != null)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound($"product {productId} not found");
+                }
             }
             catch (Exception ex)
             {
@@ -223,13 +248,22 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         /// <remarks>You can only delete products that have no prices associated with them. </remarks>
         /// <param name="productId">Product id in stripe</param>
         /// <response code="200">Returns true if product deleted successfully</response>
+        /// <response code="404">Product with such id not found</response>
         /// <response code="500">Server error</response>
         [HttpDelete("DeleteProduct")]
         public async Task<IActionResult> DeleteProduct(string productId)
         {
             try
             {
-                return Ok(await _stripeService.DeleteStripeProductAsync(productId));
+                var result = await _stripeService.DeleteStripeProductAsync(productId);
+                if (result != null)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound($"product {productId} not found");
+                }
             }
             catch (Exception ex)
             {
@@ -244,13 +278,27 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         /// <param name="amount">Amount of money to refund</param>
         /// <param name="reason">Reason of refund</param>
         /// <response code="200">Returns refund id</response>
+        /// <response code="400">Invalid amount</response>
+        /// <response code="404">Payment intent with such id not found</response>
         /// <response code="500">Server error</response>
         [HttpPost("CreateRefund")]
         public async Task<IActionResult> CreateRefund(string paymentIntentId, decimal amount, string reason)
         {
             try
             {
-                return Ok(await _stripeService.CreateRefundAsync(paymentIntentId, (long)amount, reason));
+                if(amount<=0)
+                {
+                    return BadRequest($"amount {amount} is invalid");
+                }
+                var result = await _stripeService.CreateRefundAsync(paymentIntentId, (long)amount, reason);
+                if (result != null)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound($"payment intent {paymentIntentId} not found");
+                }
             }
             catch (StripeException ex)
             {
@@ -266,6 +314,7 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
         /// <param name="customerId">Customer id in stripe</param>
         /// <response code="200">Returns clientSecret that should be processed on the front</response>
         /// <response code="400">Incorrect amount of donation</response>
+        /// <response code="404">Customer with such id not found</response>
         /// <response code="500">Server error</response>
         [HttpPost("donate")]
         public async Task<IActionResult> Donate(decimal amount, string currency, string customerId)
@@ -274,10 +323,14 @@ namespace Paymant_Module_NEOXONLINE.Controllers.Payment
             {
                 return BadRequest("Donation amount must be greater than zero.");
             }
+            var customer = _stripeService.GetStripeCustomerAsync(customerId);
+            if (customer != null)
+            {
+                var secret = _stripeService.CreateDonationAsync(amount, currency, customerId);
 
-            var secret = _stripeService.CreateDonationAsync(amount, currency, customerId);
-
-            return Ok(new { clientSecret = secret });
+                return Ok(new { clientSecret = secret });
+            }
+            return NotFound($"customer {customerId} not found");
         }
 
         /// <summary>

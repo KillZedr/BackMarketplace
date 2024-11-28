@@ -105,13 +105,18 @@ namespace Payment.BLL.Services.Payment
             return product;
         }
 
-        public async Task<bool> DeleteStripeProductAsync(string productId)
+        public async Task<bool?> DeleteStripeProductAsync(string productId)
         {
             try
             {
-                DeactivateProductPricesAsync(productId);
-                var deletedProduct = await _productService.DeleteAsync(productId);//err
-                return (bool)deletedProduct.Deleted;
+                var product = await _productService.GetAsync(productId);
+                if (product != null)
+                {
+                    DeactivateProductPricesAsync(productId);
+                    var deletedProduct = await _productService.DeleteAsync(productId);//err
+                    return (bool)deletedProduct.Deleted;
+                }
+                return null;                
             }
             catch (StripeException ex)
             {
@@ -138,17 +143,23 @@ namespace Payment.BLL.Services.Payment
             }
         }
 
-        public async Task<bool> ArchiveStripeProductAsync(string id)
+        public async Task<bool?> ArchiveStripeProductAsync(string id)
         {
             try
             {
-                var updateOptions = new ProductUpdateOptions
+                var product = await _productService.GetAsync(id);
+                if (product != null)
                 {
-                    Active = false
-                };
+                    var updateOptions = new ProductUpdateOptions
+                    {
+                        Active = false
+                    };
 
-                var updatedProduct = await _productService.UpdateAsync(id, updateOptions);
-                return !updatedProduct.Active;
+                    var updatedProduct = await _productService.UpdateAsync(id, updateOptions);
+                    return !updatedProduct.Active;
+                }
+                return null;
+
             }
             catch (StripeException ex)
             {
@@ -156,15 +167,20 @@ namespace Payment.BLL.Services.Payment
             }
         }
 
-        public async Task<bool> ActivateStripeProductAsync(string id)
+        public async Task<bool?> ActivateStripeProductAsync(string id)
         {
-            var updateOptions = new ProductUpdateOptions
+            var product = await _productService.GetAsync(id);
+            if (product != null)
             {
-                Active = true
-            };
+                var updateOptions = new ProductUpdateOptions
+                {
+                    Active = true
+                };
 
-            var updatedProduct = await _productService.UpdateAsync(id, updateOptions);
-            return updatedProduct.Active;
+                var updatedProduct = await _productService.UpdateAsync(id, updateOptions);
+                return updatedProduct.Active;
+            }
+            return null;
         }
 
         public async Task<string> CreateCheckoutSessionAsync(List<string> prices, string customerId)
@@ -221,19 +237,34 @@ namespace Payment.BLL.Services.Payment
             return customer;
         }
 
-        public async Task<string> CreateRefundAsync(string paymentIntentId, long amount, string reason)
+        public Task<Customer?> GetStripeCustomerAsync(string id)
+        {
+            var customer = _customerService.GetAsync(id);
+            if(customer != null)
+            {
+                return customer;
+            }
+            return null;
+        }
+
+        public async Task<string?> CreateRefundAsync(string paymentIntentId, long amount, string reason)
         {
             try
             {
-                var refundOptions = new RefundCreateOptions
+                var pi = _paymentIntentService.GetAsync(paymentIntentId);
+                if(pi != null)
                 {
-                    PaymentIntent = paymentIntentId,
-                    Amount = amount, // Сумма возврата в центах (optional, для частичного возврата)
-                    Reason = reason ?? "requested_by_customer" //"duplicate", "fraudulent", "requested_by_customer"
-                };
+                    var refundOptions = new RefundCreateOptions
+                    {
+                        PaymentIntent = paymentIntentId,
+                        Amount = amount, // Сумма возврата в центах (optional, для частичного возврата)
+                        Reason = reason ?? "requested_by_customer" //"duplicate", "fraudulent", "requested_by_customer"
+                    };
 
-                Refund refund = await _refundService.CreateAsync(refundOptions);
-                return refund.Id;
+                    Refund refund = await _refundService.CreateAsync(refundOptions);
+                    return refund.Id;
+                }
+                return null;
             }
             catch (StripeException ex)
             {
